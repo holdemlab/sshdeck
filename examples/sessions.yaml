@@ -1,0 +1,58 @@
+# Copy to ~/.config/sshdeck/sessions.yaml
+#
+# Settings on the root or a folder (user, port, jump, identity) are inherited
+# by everything inside it; a session or subfolder can override them.
+#
+# jump: either another session by its path ("infra/proxy") or
+#       [user@]host[:port]. Chain several with commas: "proxy1, proxy2".
+
+user: admin
+
+folders:
+  - name: infra
+    sessions:
+      - name: proxy
+        host: proxy.example.com
+        user: jumper
+
+  - name: prod
+    # every session in prod goes through the proxy session above
+    jump: infra/proxy
+    # marked red in the tree and on its tabs (C in the tree to change)
+    fill: red
+    folders:
+      - name: web
+        user: deploy
+        sessions:
+          - name: web-01
+            host: 10.0.10.11
+            note: nginx + app
+          - name: web-02
+            host: 10.0.10.12
+    sessions:
+      - name: db-main
+        host: 10.0.20.5
+        port: 2222
+        # tunnels started with the connection (ssh -L / -D / -R notation);
+        # open the session with "t" in the sidebar to get only the tunnels
+        forwards:
+          - L 5432:localhost:5432         # local 5432 → postgres on db-main
+          - L 9090:grafana.internal:3000  # any host reachable from db-main
+          - D 1080                        # SOCKS5 proxy through db-main
+      - name: db-top
+        host: 10.0.20.5
+        port: 2222
+        command: htop        # runs instead of the login shell
+
+  - name: staging
+    color: peach
+    identity: ~/.ssh/id_staging
+    jump: ops@bastion.stg.example.com:2200
+    sessions:
+      - name: api-stg
+        host: api.stg.internal
+
+sessions:
+  - name: homelab
+    host: 192.168.1.10
+    user: me

@@ -1,0 +1,14 @@
+# build output
+/bin/
+/dist/
+
+# test and coverage output
+*.test
+*.out
+coverage.*
+
+# editors and OS
+.*/
+!.github/
+*.swp
+.DS_Store
