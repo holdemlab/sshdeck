@@ -18,6 +18,8 @@ English: [README.md](README.md)
   Згортання папок (зокрема всіх разом: `H` / `L`) запам'ятовується між запусками.
 - **Успадкування:** `user`, `port`, `jump`, `identity` задаються на папці й діють на
   все всередині.
+- **Локальний shell:** пункт `local` угорі дерева (або `ctrl+a l`) відкриває
+  вкладку з shell на цьому комп'ютері поруч із SSH-вкладками.
 - **Jump-хости і ланцюжки** (як `ProxyJump`), зі своїм ключем на кожному вузлі.
 - **Авторизація:** ключі (зокрема з passphrase), ssh-agent, keyboard-interactive,
   пароль. Запити з'являються прямо у вкладці. Прийняті паролі пам'ятаються лише
@@ -85,6 +87,7 @@ cmd/sshdeck/          точка входу, прапорці
 internal/config/      sessions.yaml і config.yaml: типи, load/save, успадкування, операції з деревом
 internal/sshclient/   SSH-клієнт: маршрут через jump-хости, авторизація, known_hosts, pty
 internal/tunnel/      тунелі L / R / D (SOCKS5), статистика
+internal/localshell/   локальні вкладки з shell (pty)
 internal/sshtest/     вбудований SSH-сервер для тестів
 internal/ui/          Bubble Tea: вкладки, сайдбар, форми, тунелі, налаштування
 internal/i18n/        переклади інтерфейсу (англійські ключі → українська)

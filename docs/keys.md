@@ -28,6 +28,7 @@ status line is highlighted and shows the available commands.
 | `w` / `x` | close the tab (asks first if the connection is live and `confirm_close: true`) |
 | `r` | reconnect a closed tab |
 | `d` | open another tab with the same session |
+| `l` | open a [local shell](settings.md#local-shell) tab |
 | `t` | [tunnels panel](tunnels.md#tunnels-panel-ctrla-t) of the current tab |
 | `e` | edit the current tab's session |
 | `k` | install your public key on the tab's server, so you log in without a password from then on ([details](authentication.md#installing-a-key-on-the-server-ctrla-k)) |
@@ -47,7 +48,7 @@ status line is highlighted and shows the available commands.
 | `→` / `l` | unfold the folder |
 | `H` or `-` | fold all folders (the cursor moves to the top-level folder) |
 | `L` or `*` | unfold all folders |
-| `enter` | open the session in a tab; on a folder, fold / unfold |
+| `enter` | open the session in a tab; on a folder, fold / unfold; on `local`, a [local shell](settings.md#local-shell) |
 | `t` | open the session in [tunnels-only](tunnels.md#tunnels-only-mode) mode |
 | `/` | search (`enter` opens, `esc` clears, `↑↓` / `tab` select) |
 | `n` | new session in the selected folder |

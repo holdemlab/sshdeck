@@ -25,6 +25,8 @@ single static binary.
   (including all at once: `H` / `L`) are remembered between runs.
 - **Inheritance:** `user`, `port`, `jump`, `identity` are set on a folder and
   apply to everything inside.
+- **Local shell:** the `local` entry at the top of the tree (or `ctrl+a l`)
+  opens a tab with a shell on this computer, next to your SSH tabs.
 - **Jump hosts and chains** (like `ProxyJump`), with its own key on each hop.
 - **Authentication:** keys (including with a passphrase), ssh-agent,
   keyboard-interactive, password. Prompts appear right in the tab. Accepted
@@ -94,6 +96,7 @@ cmd/sshdeck/          entry point, flags
 internal/config/      sessions.yaml and config.yaml: types, load/save, inheritance, tree operations
 internal/sshclient/   SSH client: routing through jump hosts, authentication, known_hosts, pty
 internal/tunnel/      tunnels L / R / D (SOCKS5), stats
+internal/localshell/   local shell tabs (pty)
 internal/sshtest/     built-in SSH server for tests
 internal/ui/          Bubble Tea: tabs, sidebar, forms, tunnels, settings
 internal/i18n/        interface translations (English keys → Ukrainian)

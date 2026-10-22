@@ -127,3 +127,28 @@ func TestSettingsTheme(t *testing.T) {
 		t.Error("theme dracula accepted")
 	}
 }
+
+func TestSettingsLocalShell(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	if !DefaultSettings().LocalShell {
+		t.Fatal("the local entry should be on by default")
+	}
+	// an old config.yaml without the keys keeps the default
+	os.WriteFile(path, []byte("prefix: ctrl+a\n"), 0o600)
+	if s, err := LoadSettings(path, false); err != nil || !s.LocalShell {
+		t.Fatalf("old file: %+v %v", s.LocalShell, err)
+	}
+	s := DefaultSettings()
+	s.LocalShell, s.LocalCommand, s.LocalColor, s.LocalFill = false, "zsh -l", "Orange", "#ABC"
+	if err := SaveSettings(path, s); err != nil {
+		t.Fatal(err)
+	}
+	got, err := LoadSettings(path, false)
+	if err != nil || got.LocalShell || got.LocalCommand != "zsh -l" || got.LocalColor != "peach" || got.LocalFill != "#aabbcc" {
+		t.Errorf("round trip: %+v %v", got, err)
+	}
+	s.LocalFill = "sparkly"
+	if err := SaveSettings(path, s); err == nil {
+		t.Error("bad local_fill accepted")
+	}
+}

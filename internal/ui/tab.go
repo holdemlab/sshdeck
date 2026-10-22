@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os/exec"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -17,6 +18,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/holdemlab/sshdeck/internal/config"
+	"github.com/holdemlab/sshdeck/internal/localshell"
 	"github.com/holdemlab/sshdeck/internal/sshclient"
 	"github.com/holdemlab/sshdeck/internal/tunnel"
 )
@@ -60,7 +62,15 @@ func (n *Notifier) Send(msg tea.Msg) {
 	}
 }
 
-// Tab is one SSH connection rendered through a terminal emulator.
+// shellConn is the far end of a tab: an SSH shell or a local one.
+type shellConn interface {
+	Write(p []byte) (int, error)
+	Resize(width, height int) error
+	Close() error
+}
+
+// Tab is one SSH connection (or a local shell) rendered through a terminal
+// emulator.
 type Tab struct {
 	id      int
 	session config.Resolved
@@ -72,7 +82,7 @@ type Tab struct {
 	state  tabState
 	reason string // why the tab closed
 	conn   *sshclient.Conn
-	shell  *sshclient.Shell
+	shell  shellConn
 	ctx    context.Context // current connection attempt
 	cancel context.CancelFunc
 	prompt *linePrompt
@@ -85,6 +95,8 @@ type Tab struct {
 	lastEvent  string      // last tunnel error, shown in the status bar
 
 	scroll int // lines scrolled back; 0 = live view (UI goroutine only)
+
+	local bool // a shell on this computer, no SSH
 }
 
 // linePrompt is an in-tab question (password, host key, passphrase).
@@ -227,6 +239,8 @@ func (t *Tab) connect(cfg *config.Config, s config.Settings, sec *sshclient.Secr
 		t.mu.Unlock()
 		if failed {
 			t.print("\r\n\x1b[31m✗ " + err.Error() + "\x1b[0m\n")
+		} else if t.local {
+			t.print("\r\n\x1b[2m" + T("The shell has exited.") + "\x1b[0m\n")
 		} else {
 			t.print("\r\n\x1b[2m" + T("Connection to %s closed.", sess.Name) + "\x1b[0m\n")
 		}
@@ -235,6 +249,9 @@ func (t *Tab) connect(cfg *config.Config, s config.Settings, sec *sshclient.Secr
 }
 
 func (t *Tab) run(ctx context.Context, cfg *config.Config, s config.Settings, sess config.Resolved, sec *sshclient.Secrets) error {
+	if t.local {
+		return t.runLocal(ctx, s)
+	}
 	hops, err := sshclient.Plan(cfg, sess)
 	if err != nil {
 		return err
@@ -290,6 +307,39 @@ func (t *Tab) run(ctx context.Context, cfg *config.Config, s config.Settings, se
 	var missing *ssh.ExitMissingError
 	if errors.As(err, &missing) || errors.Is(err, io.EOF) {
 		return errors.New(T("connection lost"))
+	}
+	return err
+}
+
+// runLocal starts a shell on this computer and waits for it to exit.
+func (t *Tab) runLocal(ctx context.Context, s config.Settings) error {
+	t.mu.Lock()
+	t.route = T("local: %s", localshell.Describe(s.LocalCommand))
+	t.mu.Unlock()
+	sh, err := localshell.Start(s.LocalCommand, s.Term, t.emu.Width(), t.emu.Height(), t)
+	if err != nil {
+		return err
+	}
+	t.mu.Lock()
+	t.shell, t.state = sh, stateConnected
+	t.mu.Unlock()
+	t.changed()
+
+	done := make(chan error, 1)
+	go func() { done <- sh.Wait() }()
+	select {
+	case err = <-done:
+	case <-ctx.Done():
+		sh.Close()
+		<-done
+		return ctx.Err()
+	}
+	var exit *exec.ExitError
+	if errors.As(err, &exit) {
+		if code := exit.ExitCode(); code > 0 {
+			return fmt.Errorf("%s", T("the shell exited with status %d", code))
+		}
+		return nil // killed by a signal, e.g. after a hang-up
 	}
 	return err
 }

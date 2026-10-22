@@ -58,6 +58,16 @@ type Settings struct {
 	// RememberPasswords keeps accepted passwords and key passphrases in
 	// memory until sshdeck exits (never on disk).
 	RememberPasswords bool `yaml:"remember_passwords"`
+
+	// LocalShell shows the built-in "local" entry at the top of the tree: a
+	// tab with a shell on this computer, no SSH involved.
+	LocalShell bool `yaml:"local_shell"`
+	// LocalCommand runs in local tabs instead of $SHELL ("zsh -l", "fish").
+	LocalCommand string `yaml:"local_command"`
+	// LocalColor and LocalFill mark the local entry like a session's
+	// color / fill.
+	LocalColor string `yaml:"local_color"`
+	LocalFill  string `yaml:"local_fill"`
 }
 
 // DefaultSettings returns the built-in defaults.
@@ -77,6 +87,7 @@ func DefaultSettings() Settings {
 		ConfirmClose:   true,
 
 		RememberPasswords: true,
+		LocalShell:        true,
 	}
 }
 
@@ -107,7 +118,8 @@ func (s Settings) Render() string {
 	}
 	return fmt.Sprintf(tmpl, lang, th, strconv.Quote(s.Prefix), s.SidebarWidth, s.Scrollback, strconv.Quote(s.Term),
 		durString(s.ConnectTimeout), durString(s.Keepalive), strconv.Quote(s.KnownHosts),
-		s.UseAgent, ids.String(), s.RememberPasswords, s.ConfirmClose)
+		s.UseAgent, ids.String(), s.RememberPasswords, s.ConfirmClose,
+		s.LocalShell, strconv.Quote(s.LocalCommand), strconv.Quote(s.LocalColor), strconv.Quote(s.LocalFill))
 }
 
 // The comments of config.yaml follow the interface language.
@@ -146,6 +158,14 @@ identities:%s
 remember_passwords: %t
 
 confirm_close: %t         # ask before closing a tab with a live connection
+
+# The "local" entry at the top of the tree opens a shell on this computer
+# (also prefix + l). local_command runs instead of $SHELL, e.g. "zsh -l".
+# local_color / local_fill mark it like a session (palette name or #rrggbb).
+local_shell: %t
+local_command: %s
+local_color: %s
+local_fill: %s
 `
 
 const settingsTemplateUK = `# Налаштування sshdeck. Сесії лежать у sessions.yaml поруч із цим файлом.
@@ -183,6 +203,14 @@ identities:%s
 remember_passwords: %t
 
 confirm_close: %t         # питати перед закриттям вкладки з живим з'єднанням
+
+# Пункт «local» угорі дерева відкриває shell на цьому комп'ютері (також
+# prefix + l). local_command запускається замість $SHELL, напр. "zsh -l".
+# local_color / local_fill позначають його, як сесію (назва з палітри або #rrggbb).
+local_shell: %t
+local_command: %s
+local_color: %s
+local_fill: %s
 `
 
 func durString(d Duration) string {
@@ -271,6 +299,14 @@ func (s *Settings) validate() error {
 	if s.ConnectTimeout <= 0 {
 		s.ConnectTimeout = Duration(15 * time.Second)
 	}
+	for _, c := range []*string{&s.LocalColor, &s.LocalFill} {
+		n, ok := NormalizeColor(*c)
+		if !ok {
+			return fmt.Errorf("local_color / local_fill %q: use a palette name, #rrggbb or nothing", *c)
+		}
+		*c = n
+	}
+	s.LocalCommand = strings.TrimSpace(s.LocalCommand)
 	return nil
 }
 

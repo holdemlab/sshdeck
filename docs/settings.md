@@ -20,6 +20,9 @@ run. You can change settings on the settings screen in sshdeck or by hand.
 | `identities` | `~/.ssh/id_ed25519`, `~/.ssh/id_ecdsa`, `~/.ssh/id_rsa` | list of paths | keys tried for **every** session after its own key; missing files are skipped | next connection |
 | `remember_passwords` | `true` | `true` / `false` | remember accepted passwords and key passphrases in memory until exit; nothing is written to disk; turning it off clears what was remembered, see [authentication.md](authentication.md#remembering-passwords-in-memory) | immediately |
 | `confirm_close` | `true` | `true` / `false` | ask before closing a tab with a live connection | immediately |
+| `local_shell` | `true` | `true` / `false` | show the `local` entry at the top of the tree, see [below](#local-shell) | immediately |
+| `local_command` | empty (`$SHELL`) | a command line | what local tabs run instead of `$SHELL`, e.g. `zsh -l` | new local tabs |
+| `local_color`, `local_fill` | empty | palette name, `#rrggbb` | color mark of the `local` entry and its tabs, like [session colors](sessions.md#color-marks) | immediately |
 
 Durations are written like this: `500ms`, `15s`, `2m`, `1m30s`; `0` means "off".
 
@@ -42,6 +45,8 @@ Settings  ~/.config/sshdeck/config.yaml
   known_hosts    ~/.config/sshdeck/known_hosts
   ssh-agent      [x] on
   Keys           ~/.ssh/id_ed25519, ~/.ssh/id_ecdsa, ~/.ssh/id_rsa
+  Local shell    [x] on
+  Local cmd      $SHELL
   Remember pw    [x] on
   Confirm close  [x] on
 ```
@@ -127,6 +132,32 @@ set -as terminal-features ",*:RGB"
 ```
 
 and check that `COLORTERM=truecolor` is set (most terminals set it themselves).
+
+## Local shell
+
+The first entry in the tree, `local  this computer`, opens a tab with a shell
+on your own computer: no SSH, no password, no host key. It is handy for a
+quick local command next to your remote tabs, or to run `ssh-keygen`, `git` or
+an editor without leaving sshdeck.
+
+- `enter` on `local`, or `ctrl+a l` from anywhere, opens a local tab. You can
+  open as many as you like; `ctrl+a d` opens another one.
+- The tab works like any other: scrollback (`ctrl+a [`), themes, resizing,
+  `r` to start a new shell after `exit`.
+- It runs `$SHELL` (or `/bin/sh`) in your home directory. `local_command`
+  runs something else through `/bin/sh -c`: `zsh -l`, `fish`, `tmux new -A -s
+  main`. Programs see `TERM` from the `term` setting, `COLORTERM=truecolor`
+  and `SSHDECK=1` (handy in a shell prompt).
+- `C` on `local` sets its colors (stored as `local_color` / `local_fill` in
+  `config.yaml`); `e` opens these settings.
+- It is not part of `sessions.yaml`, so it cannot be renamed, moved, copied
+  or deleted. To hide it, turn off **Local shell** in the settings
+  (`local_shell: false`).
+- Tunnels and `ctrl+a k` (install a key) need an SSH session, so they are not
+  available in a local tab.
+- Closing the tab hangs up the shell like closing a terminal window
+  (`SIGHUP`).
+- Linux, macOS and other Unix systems. On Windows the entry is not shown.
 
 ## Prefix and tmux
 
