@@ -38,6 +38,7 @@ stays open, and `r` reconnects.
 | `Connection to … closed.` | the shell on the server ended (`exit`) |
 | `remote exited with status N` | the command or shell ended with code N |
 | `connection lost` | the connection dropped or the server stopped answering keepalives |
+| text cannot be selected with the mouse | the mouse goes to sshdeck: hold **Shift** while selecting (Option in iTerm2), or set `mouse: false` |
 
 ## Configs
 

@@ -132,14 +132,33 @@ The top right corner shows `scroll N/M`. Full-screen programs (vim, htop) don't
 write to the history.
 
 **Copy and paste:**
-- sshdeck does not capture the mouse, so you select and copy text with your
-  terminal's tools, as usual;
+- select text with the mouse while holding **Shift** (Option in iTerm2) and
+  copy it with your terminal's tools, as usual; without Shift the mouse goes
+  to sshdeck, see [Mouse](#mouse). With `mouse: false`, no Shift is needed;
 - pasting from the clipboard is passed to the server; if the program on the
   server asked for bracketed paste, it gets it.
 
 **Window size.** Resizing the window or hiding the sidebar tells the server the
 new size at once. The current size is shown in the status line, for example
 `88×28`.
+
+## Mouse
+
+On by default; `mouse: false` in the [settings](settings.md) turns it off.
+
+| Where | What it does |
+|---|---|
+| tab bar | click: switch to the tab; middle click: close it (asks first if it is connected) |
+| tree | click: select; double click: open the session / fold the folder; click on `▾` `▸`: fold at once; wheel: move |
+| `/ search` line | click: start a search |
+| sidebar edge `│` | drag: change the sidebar width; it is saved in `config.yaml` |
+| terminal | click: focus the terminal. Programs that use the mouse (vim with `set mouse=a`, htop, mc, tmux) get clicks, drags and the wheel |
+| terminal, other programs | wheel: scroll the history like `prefix [`; in full-screen programs without mouse support (less, man) the wheel sends `↑` / `↓` |
+| help | wheel: scroll |
+
+**Selecting text:** while the mouse is on, the terminal hands it to sshdeck,
+so hold **Shift** to select (Option in iTerm2). This is how every terminal
+program with mouse support works (tmux, htop, mc).
 
 ## In-app help
 

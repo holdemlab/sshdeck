@@ -138,7 +138,7 @@ Same format as in ssh:
 | `⇄2` | 2 tunnels running |
 
 Scroll history: `ctrl+a [`, then `↑↓` `pgup pgdn` `g G`, exit with `esc`.
-Selecting and copying text works with your terminal's own tools.
+Select text with Shift held and copy it with your terminal's own tools.
 
 ## Language
 
@@ -157,6 +157,13 @@ mix up `prod` and `staging`. In `sessions.yaml` these are `color:` and `fill:`
 `ctrl+a ,` → **Theme**: `terminal` (your terminal's colors) or Catppuccin
 `Latte` (light), `Frappé`, `Macchiato`, `Mocha`. The scheme shows at once while
 you choose and also colors the programs in the tabs.
+
+## Mouse
+
+Click a tab to switch, middle click to close; click and double click in the
+tree; the wheel scrolls the tree, the history and this help; drag the sidebar
+edge to resize. vim, htop, mc get the mouse too. **Select text with Shift
+held.** Turn it off with `mouse: false`.
 
 ## Version
 

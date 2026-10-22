@@ -59,6 +59,11 @@ type Settings struct {
 	// memory until sshdeck exits (never on disk).
 	RememberPasswords bool `yaml:"remember_passwords"`
 
+	// Mouse lets sshdeck use the mouse: clicks on tabs and the tree, the
+	// wheel, dragging the sidebar edge, and mouse input for programs in the
+	// tabs. Text is then selected with Shift held.
+	Mouse bool `yaml:"mouse"`
+
 	// LocalShell shows the built-in "local" entry at the top of the tree: a
 	// tab with a shell on this computer, no SSH involved.
 	LocalShell bool `yaml:"local_shell"`
@@ -88,6 +93,7 @@ func DefaultSettings() Settings {
 
 		RememberPasswords: true,
 		LocalShell:        true,
+		Mouse:             true,
 	}
 }
 
@@ -118,7 +124,7 @@ func (s Settings) Render() string {
 	}
 	return fmt.Sprintf(tmpl, lang, th, strconv.Quote(s.Prefix), s.SidebarWidth, s.Scrollback, strconv.Quote(s.Term),
 		durString(s.ConnectTimeout), durString(s.Keepalive), strconv.Quote(s.KnownHosts),
-		s.UseAgent, ids.String(), s.RememberPasswords, s.ConfirmClose,
+		s.UseAgent, ids.String(), s.RememberPasswords, s.ConfirmClose, s.Mouse,
 		s.LocalShell, strconv.Quote(s.LocalCommand), strconv.Quote(s.LocalColor), strconv.Quote(s.LocalFill))
 }
 
@@ -158,6 +164,11 @@ identities:%s
 remember_passwords: %t
 
 confirm_close: %t         # ask before closing a tab with a live connection
+
+# Mouse: click tabs and the tree, scroll with the wheel, drag the sidebar
+# edge; programs in the tabs (vim, htop, mc) get the mouse too. While it is
+# on, select text with Shift held (Option in iTerm2).
+mouse: %t
 
 # The "local" entry at the top of the tree opens a shell on this computer
 # (also prefix + l). local_command runs instead of $SHELL, e.g. "zsh -l".
@@ -203,6 +214,11 @@ identities:%s
 remember_passwords: %t
 
 confirm_close: %t         # питати перед закриттям вкладки з живим з'єднанням
+
+# Миша: клік по вкладках і дереву, прокрутка колесом, перетягування межі
+# сайдбара; програми у вкладках (vim, htop, mc) теж отримують мишу. Поки вона
+# увімкнена, текст виділяють із затиснутим Shift (Option в iTerm2).
+mouse: %t
 
 # Пункт «local» угорі дерева відкриває shell на цьому комп'ютері (також
 # prefix + l). local_command запускається замість $SHELL, напр. "zsh -l".

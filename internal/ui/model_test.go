@@ -1530,3 +1530,120 @@ func TestLocalShellColors(t *testing.T) {
 		t.Error("the local colors leaked into sessions.yaml")
 	}
 }
+
+func click(x, y int) tea.Msg { return tea.MouseClickMsg{X: x, Y: y, Button: tea.MouseLeft} }
+
+// localTabs opens n local tabs running command.
+func localTabs(t *testing.T, m Model, n int, command string) Model {
+	t.Helper()
+	if !localshell.Supported() {
+		t.Skip("no local shell here")
+	}
+	s := m.opts.Settings
+	s.LocalCommand = command
+	m.applySettings(s)
+	for range n {
+		m.openLocalTab()
+	}
+	return m
+}
+
+// Mouse on the tab bar, the tree and the sidebar edge.
+func TestMouseTabsTreeAndSidebar(t *testing.T) {
+	m, _ := setup(t, treeYAML)
+	m = localTabs(t, m, 2, "sleep 30")
+	defer closeAll(t, m)
+	spans := m.tabSpans()
+	if len(spans) != 2 {
+		t.Fatalf("spans %v", spans)
+	}
+	m = send(m, click(spans[0][0]+1, 0))
+	if m.active != 0 {
+		t.Errorf("click on tab 1: active = %d", m.active)
+	}
+	m = send(m, tea.MouseClickMsg{X: spans[1][0] + 1, Y: 0, Button: tea.MouseMiddle})
+	if m.overlay != overlayConfirmClose || m.active != 1 {
+		t.Errorf("middle click should ask to close tab 2: overlay %v active %d", m.overlay, m.active)
+	}
+	m = send(m, keys("n")...) // keep it
+
+	// tree: rows start at y=3; prod (folder) is row 0
+	m = send(m, click(20, 4)) // web-01
+	if m.focus != focusSidebar || m.cursor != 1 {
+		t.Errorf("click on a row: focus %v cursor %d", m.focus, m.cursor)
+	}
+	m = send(m, click(2, 3)) // the arrow of prod folds it
+	if !m.collapsed["f:prod"] {
+		t.Error("click on the arrow did not fold")
+	}
+	m = send(m, click(10, 3), click(10, 3)) // double click unfolds
+	if m.collapsed["f:prod"] {
+		t.Error("double click did not unfold")
+	}
+	m = send(m, tea.MouseWheelMsg{X: 10, Y: 5, Button: tea.MouseWheelDown})
+	if m.cursor != 3 {
+		t.Errorf("wheel: cursor %d", m.cursor)
+	}
+
+	// drag the sidebar edge to column 40 and release: saved
+	sw := m.sidebarWidth()
+	m = send(m, click(sw-1, 6), tea.MouseMotionMsg{X: 40, Y: 6, Button: tea.MouseLeft}, tea.MouseReleaseMsg{X: 40, Y: 6})
+	if m.opts.Settings.SidebarWidth != 41 || m.termRect().Min.X != 41 {
+		t.Errorf("drag: width %d", m.opts.Settings.SidebarWidth)
+	}
+	saved, err := config.LoadSettings(m.opts.SettingsPath, false)
+	if err != nil || saved.SidebarWidth != 41 {
+		t.Errorf("saved width %d %v", saved.SidebarWidth, err)
+	}
+
+	// mouse: false ignores everything
+	s := m.opts.Settings
+	s.Mouse = false
+	m.applySettings(s)
+	m = send(m, click(spans[0][0]+1, 0))
+	if m.active != 1 {
+		t.Error("mouse: false still switched tabs")
+	}
+	if m.View().MouseMode != tea.MouseModeNone {
+		t.Error("mouse mode still requested")
+	}
+}
+
+// Programs that ask for the mouse get it; otherwise the wheel scrolls.
+func TestMouseInTerminal(t *testing.T) {
+	m, _ := setup(t, treeYAML)
+	m = localTabs(t, m, 1, `seq 1 100; printf 'ready\n'; read x; printf '\033[?1000h\033[?1006hmouse-on\n'; cat`)
+	defer closeAll(t, m)
+	tab := m.activeTab()
+	waitScreen(t, tab, "ready")
+	tr := m.termRect()
+
+	// no mouse reporting yet: the wheel scrolls the history
+	m = send(m, tea.MouseWheelMsg{X: tr.Min.X + 5, Y: tr.Min.Y + 5, Button: tea.MouseWheelUp})
+	if !m.scrolling || tab.scroll != wheelLines {
+		t.Fatalf("wheel up: scrolling %v scroll %d", m.scrolling, tab.scroll)
+	}
+	m = send(m, tea.MouseWheelMsg{X: tr.Min.X + 5, Y: tr.Min.Y + 5, Button: tea.MouseWheelDown})
+	if m.scrolling || tab.scroll != 0 {
+		t.Fatalf("wheel down: scrolling %v scroll %d", m.scrolling, tab.scroll)
+	}
+
+	// the program turns mouse reporting on: a click reaches it (the pty
+	// echoes the SGR report as ^[[<0;6;3M)
+	m = sendRun(t, m, key("enter"))
+	waitScreen(t, tab, "mouse-on")
+	deadline := time.Now().Add(5 * time.Second)
+	for !tab.wantsMouse() && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !tab.wantsMouse() {
+		t.Fatal("mouse mode not noticed")
+	}
+	m = send(m, click(tr.Min.X+5, tr.Min.Y+2))
+	waitScreen(t, tab, "[<0;6;3M")
+	m = send(m, tea.MouseWheelMsg{X: tr.Min.X + 5, Y: tr.Min.Y + 2, Button: tea.MouseWheelUp})
+	if m.scrolling {
+		t.Error("the wheel scrolled instead of going to the program")
+	}
+	waitScreen(t, tab, "[<64;6;3M")
+}

@@ -95,7 +95,9 @@ type Model struct {
 	key keyDialog
 
 	// help screen (overlayHelp)
-	help   helpView
+	help  helpView
+	mouse mouseState // double clicks, sidebar drag
+
 	darkBG bool // terminal background, for the help theme
 	// colors256: the terminal has 256 colors, not truecolor (themes then
 	// pick the nearest colors themselves)
@@ -275,6 +277,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyPressMsg:
 		return m.handleKey(msg)
+
+	case tea.MouseMsg:
+		return m.handleMouse(msg)
 	}
 
 	if m.focus == focusSidebar {
@@ -1167,6 +1172,9 @@ func (m Model) View() tea.View {
 	}
 	v := tea.NewView(canvas.Render())
 	v.AltScreen = true
+	if m.opts.Settings.Mouse {
+		v.MouseMode = tea.MouseModeCellMotion // clicks, wheel, drags
+	}
 	v.Cursor = cursor
 	v.WindowTitle = "sshdeck"
 	if t != nil {
@@ -1216,6 +1224,36 @@ func (m Model) drawScrollBadge(canvas *lipgloss.Canvas, t *Tab, r uv.Rectangle) 
 }
 
 func (m Model) renderTabBar() string {
+	parts := m.tabBarParts()
+	bar := strings.Join(parts, barStyle.Render(" "))
+	if lipgloss.Width(bar) > m.width {
+		bar = ansi.Truncate(bar, m.width-1, "…")
+	}
+	// the build version sits at the right end while there is room for it
+	if v := m.opts.Version; v != "" {
+		ver := barStyle.Foreground(muted).Render(v + " ")
+		if gap := m.width - lipgloss.Width(bar) - lipgloss.Width(ver); gap >= 2 {
+			bar += barStyle.Render(strings.Repeat(" ", gap)) + ver
+		}
+	}
+	return barStyle.Width(m.width).Render(bar)
+}
+
+// tabSpans are the columns [start, end) of each tab in the tab bar.
+func (m Model) tabSpans() [][2]int {
+	parts := m.tabBarParts()
+	spans := make([][2]int, 0, len(m.tabs))
+	x := lipgloss.Width(parts[0]) + 1
+	for _, p := range parts[1:] {
+		w := lipgloss.Width(p)
+		spans = append(spans, [2]int{x, x + w})
+		x += w + 1
+	}
+	return spans
+}
+
+// tabBarParts are the brand and one label per tab.
+func (m Model) tabBarParts() []string {
 	parts := []string{brandStyle.Render("sshdeck")}
 	for i, t := range m.tabs {
 		state, _ := t.getState()
@@ -1232,18 +1270,7 @@ func (m Model) renderTabBar() string {
 		}
 		parts = append(parts, tabLabel(t, i == m.active, label, dot))
 	}
-	bar := strings.Join(parts, barStyle.Render(" "))
-	if lipgloss.Width(bar) > m.width {
-		bar = ansi.Truncate(bar, m.width-1, "…")
-	}
-	// the build version sits at the right end while there is room for it
-	if v := m.opts.Version; v != "" {
-		ver := barStyle.Foreground(muted).Render(v + " ")
-		if gap := m.width - lipgloss.Width(bar) - lipgloss.Width(ver); gap >= 2 {
-			bar += barStyle.Render(strings.Repeat(" ", gap)) + ver
-		}
-	}
-	return barStyle.Width(m.width).Render(bar)
+	return parts
 }
 
 func (m Model) renderStatusBar() string {
