@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/charmbracelet/ultraviolet v0.0.0-20261008173134-6b8d4baf91b4
 	github.com/charmbracelet/x/ansi v0.11.9
-	github.com/charmbracelet/x/vt v0.0.0-20261018003744-cb897cb4ed72
+	github.com/charmbracelet/x/vt v0.1.0
 	github.com/sahilm/fuzzy v0.1.3
 	golang.org/x/crypto v0.58.0
 	gopkg.in/yaml.v3 v3.0.1
