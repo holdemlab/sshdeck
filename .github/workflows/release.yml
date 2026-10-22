@@ -37,7 +37,7 @@ jobs:
         with:
           ref: refs/tags/${{ env.TAG }}
           fetch-depth: 0 # goreleaser builds the changelog from the history
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: test
