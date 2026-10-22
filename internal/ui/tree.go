@@ -14,6 +14,7 @@ type nodeKind int
 const (
 	folderNode nodeKind = iota
 	sessionNode
+	localNode // the built-in "local" entry: a shell on this computer
 )
 
 // node is one visible row of the session tree.

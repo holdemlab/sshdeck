@@ -19,6 +19,7 @@ import (
 
 	"github.com/holdemlab/sshdeck/internal/config"
 	"github.com/holdemlab/sshdeck/internal/i18n"
+	"github.com/holdemlab/sshdeck/internal/localshell"
 	"github.com/holdemlab/sshdeck/internal/sshtest"
 )
 
@@ -32,7 +33,8 @@ func setup(t *testing.T, sessions string) (Model, string) {
 	s.UseAgent = false
 	s.Identities = nil
 	s.Keepalive = 0
-	m, err := New(Options{ConfigPath: path, Settings: s})
+	s.LocalShell = false // tests that need the local entry turn it on
+	m, err := New(Options{ConfigPath: path, SettingsPath: filepath.Join(dir, "config.yaml"), Settings: s})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1436,5 +1438,95 @@ func TestVersionShown(t *testing.T) {
 	m = send(m, tea.WindowSizeMsg{Width: 12, Height: 20})
 	if strings.Contains(strings.Split(ansi.Strip(m.View().Content), "\n")[0], "v1.2.3") {
 		t.Error("version squeezed into a too narrow tab bar")
+	}
+}
+
+// The local entry: first in the tree, opens a shell on this computer, and
+// refuses the tree operations that make no sense for it.
+func TestLocalShell(t *testing.T) {
+	if !localshell.Supported() {
+		t.Skip("no local shell here")
+	}
+	m, path := setup(t, treeYAML)
+	s := m.opts.Settings
+	s.LocalShell = true
+	s.LocalCommand = `printf 'local:%s\n' "$SSHDECK"; read x; echo got:$x`
+	m.applySettings(s)
+	if len(m.rows) == 0 || m.rows[0].kind != localNode {
+		t.Fatalf("local entry not first: %+v", m.rows)
+	}
+	if v := ansi.Strip(m.View().Content); !strings.Contains(v, "local this computer") {
+		t.Errorf("tree:\n%s", v)
+	}
+	// built in: no rename / delete, sessions.yaml untouched
+	before, _ := os.ReadFile(path)
+	m = send(m, keys("g", "d")...)
+	if m.overlay == overlayConfirmDelete || m.statusOK {
+		t.Error("d on the local entry should be refused")
+	}
+	m = send(m, keys("R")...)
+	if m.inline.mode != inlineNone {
+		t.Error("R on the local entry should be refused")
+	}
+	if after, _ := os.ReadFile(path); string(after) != string(before) {
+		t.Error("sessions.yaml changed")
+	}
+	// enter opens a local tab running the command
+	m = send(m, keys("enter")...)
+	tab := m.activeTab()
+	if tab == nil || !tab.local {
+		t.Fatal("no local tab")
+	}
+	waitScreen(t, tab, "local:1")
+	if !strings.Contains(tab.routeString(), "local: ") {
+		t.Errorf("route %q", tab.routeString())
+	}
+	m = sendRun(t, m, key("o"))
+	m = sendRun(t, m, key("k"))
+	m = sendRun(t, m, key("enter"))
+	waitScreen(t, tab, "got:ok")
+	waitScreen(t, tab, "The shell has exited.")
+	// tunnels and key install are refused on a local tab
+	m = send(m, keys("ctrl+a", "t")...)
+	if m.overlay == overlayTunnels || m.statusOK {
+		t.Error("tunnels panel opened on a local tab")
+	}
+	// prefix + l opens another one; the setting hides the entry
+	m = send(m, keys("ctrl+a", "l")...)
+	if len(m.tabs) != 2 || !m.tabs[1].local {
+		t.Errorf("ctrl+a l: %d tabs", len(m.tabs))
+	}
+	closeAll(t, m)
+	s.LocalShell = false
+	m.applySettings(s)
+	if len(m.rows) > 0 && m.rows[0].kind == localNode {
+		t.Error("local_shell: false still shows the entry")
+	}
+}
+
+// The local entry takes colors through C; they are stored in config.yaml.
+func TestLocalShellColors(t *testing.T) {
+	if !localshell.Supported() {
+		t.Skip("no local shell here")
+	}
+	m, path := setup(t, treeYAML)
+	s := m.opts.Settings
+	s.LocalShell = true
+	m.applySettings(s)
+	m = send(m, keys("g", "C", "down")...)
+	for m.colors.values[1] != "green" {
+		m = send(m, keys("right")...)
+	}
+	m = send(m, keys("enter")...)
+	if m.opts.Settings.LocalFill != "green" {
+		t.Fatalf("local fill = %q (%s)", m.opts.Settings.LocalFill, m.colors.err)
+	}
+	saved, err := config.LoadSettings(m.opts.SettingsPath, false)
+	if err != nil || saved.LocalFill != "green" {
+		t.Errorf("config.yaml: %q %v", saved.LocalFill, err)
+	}
+	cfg, _ := config.Load(path)
+	if cfg.Fill != "" {
+		t.Error("the local colors leaked into sessions.yaml")
 	}
 }

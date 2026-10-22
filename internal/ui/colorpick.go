@@ -116,6 +116,9 @@ func (m *Model) openColorDialog() {
 
 // ownDefaults are the settings set on the node itself (not inherited).
 func (m Model) ownDefaults(n node) config.Defaults {
+	if n.kind == localNode {
+		return config.Defaults{Color: m.opts.Settings.LocalColor, Fill: m.opts.Settings.LocalFill}
+	}
 	if n.kind == folderNode {
 		if f := m.cfg.FolderAt(n.path); f != nil {
 			return f.Defaults
@@ -154,6 +157,15 @@ func (m Model) colorKey(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 // saveMark writes color / fill of a folder or session to sessions.yaml.
 func (m *Model) saveMark(n node, colorV, fillV string) error {
+	if n.kind == localNode { // the local entry's colors live in config.yaml
+		s := m.opts.Settings
+		s.LocalColor, s.LocalFill = colorV, fillV
+		if err := config.SaveSettings(m.opts.SettingsPath, s); err != nil {
+			return err
+		}
+		m.applySettings(s)
+		return nil
+	}
 	cfg, err := config.Load(m.opts.ConfigPath)
 	if err != nil {
 		return err
@@ -204,7 +216,9 @@ func (m Model) renderColorDialog() string {
 	}
 	// preview with inheritance applied
 	eff := m.cfg.FolderDefaults(d.target.path)
-	if d.target.kind == folderNode && len(d.target.path) > 0 {
+	if d.target.kind == localNode {
+		eff = config.Defaults{} // nothing to inherit from
+	} else if d.target.kind == folderNode && len(d.target.path) > 0 {
 		eff = m.cfg.FolderDefaults(d.target.path[:len(d.target.path)-1])
 	}
 	c, f := d.values[0], d.values[1]

@@ -32,6 +32,7 @@ Always work: both in the terminal and in the tree.
 | `ctrl+a w` | close tab |
 | `ctrl+a r` | reconnect a closed tab |
 | `ctrl+a d` | another tab with the same session |
+| `ctrl+a l` | a shell on this computer (local tab) |
 | `ctrl+a t` | tab tunnels |
 | `ctrl+a e` | edit the tab's session |
 | `ctrl+a k` | install your key on the server |
@@ -48,7 +49,7 @@ Always work: both in the terminal and in the tree.
 | `↑↓` `j k` | move |
 | `←` `h` / `→` `l` | collapse / expand folder |
 | `H` or `-` / `L` or `*` | collapse / expand **all** |
-| `enter` | open session (on a folder: collapse / expand) |
+| `enter` | open session (on a folder: collapse / expand; on `local`: a shell on this computer) |
 | `t` | open tunnels only, no shell |
 | `/` | search by name, path, host |
 | `n` | new session |

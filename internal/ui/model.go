@@ -405,9 +405,13 @@ func (m Model) prefixCommand(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case "d":
-		if t := m.activeTab(); t != nil {
+		if t := m.activeTab(); t != nil && t.local {
+			m.openLocalTab()
+		} else if t != nil {
 			m.openTab(t.session, t.tunnelOnly)
 		}
+	case "l":
+		m.openLocalTab()
 	case "[":
 		if t := m.activeTab(); t != nil {
 			m.scrolling = true
@@ -416,6 +420,8 @@ func (m Model) prefixCommand(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "t":
 		if m.activeTab() == nil {
 			m.setStatus(false, "open a session first (t in the sidebar opens tunnels only)")
+		} else if m.activeTab().local {
+			m.setStatus(false, "tunnels need an SSH session; the local shell has none")
 		} else {
 			m.overlay, m.tunCursor, m.tunAdding, m.tunErr = overlayTunnels, 0, false, ""
 			return m, tunnelTick()
@@ -423,8 +429,17 @@ func (m Model) prefixCommand(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case ",":
 		m.openSettings()
 	case "e":
-		m.editTabSession()
+		if t := m.activeTab(); t != nil && t.local {
+			m.openSettings()
+			m.settings.setFocus(sLocal)
+		} else {
+			m.editTabSession()
+		}
 	case "k":
+		if t := m.activeTab(); t != nil && t.local {
+			m.setStatus(false, "the local shell needs no key; open an SSH session to install one")
+			return m, nil
+		}
 		return m, m.openInstallKey()
 	case "?", "h":
 		m.openHelp()
@@ -488,9 +503,12 @@ func (m *Model) applySettings(s config.Settings) {
 	for _, t := range m.tabs {
 		t.emu.SetScrollbackSize(s.Scrollback)
 		themeEmulator(t.emu, curTheme)
+		if t.local {
+			t.session = localSession(s) // new colors; the command applies to new tabs
+		}
 	}
 	m.resizeTabs()
-	m.clampCursor()
+	m.refreshRows() // the local entry may have been turned on or off
 }
 
 func (m Model) editorDone(msg editorDoneMsg) Model {
@@ -608,9 +626,9 @@ func (m *Model) scrollKey(t *Tab, k tea.KeyPressMsg) {
 
 func (m *Model) refreshRows() {
 	if m.side == sideFilter || m.filter.Value() != "" {
-		m.rows = filterNodes(allSessions(m.cfg), m.filter.Value())
+		m.rows = m.withLocal(filterNodes(allSessions(m.cfg), m.filter.Value()), m.filter.Value())
 	} else {
-		m.rows = buildTree(m.cfg, m.collapsed)
+		m.rows = m.withLocal(buildTree(m.cfg, m.collapsed), "")
 	}
 	m.clampCursor()
 }
@@ -657,6 +675,11 @@ func (m Model) updateSidebar(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	if m.clip == nil || k.String() != "esc" {
 		m.status = ""
+	}
+	if n, ok := m.current(); ok && n.kind == localNode {
+		if lm, cmd, handled := m.localKey(k); handled {
+			return lm, cmd
+		}
 	}
 	switch k.String() {
 	case "q", "ctrl+c":
@@ -904,6 +927,9 @@ func (m *Model) saveSession(path []string, s *config.Session, editing *sessionRe
 // (used on the next reconnect). rename maps old session ids to new ones.
 func (m *Model) refreshTabSessions(rename func(string) string) {
 	for _, t := range m.tabs {
+		if t.local {
+			continue
+		}
 		if r, ok := m.cfg.Find(rename(t.session.ID())); ok {
 			t.session = r
 		}
@@ -1224,7 +1250,7 @@ func (m Model) renderStatusBar() string {
 	var left string
 	switch {
 	case m.prefixArmed:
-		left = prefixStyle.Render(m.opts.Settings.Prefix) + " " + T("1-9 tab · n/p · s sidebar · t tunnels · e edit session · k install key · , settings · b hide · w close · r reconnect · d dup · [ scroll · ? help · q quit")
+		left = prefixStyle.Render(m.opts.Settings.Prefix) + " " + T("1-9 tab · n/p · s sidebar · l local shell · t tunnels · e edit session · k install key · , settings · b hide · w close · r reconnect · d dup · [ scroll · ? help · q quit")
 	case m.focus == focusTerm && m.activeTab() != nil:
 		t := m.activeTab()
 		_, reason := t.getState()
@@ -1326,6 +1352,17 @@ func (m Model) renderRow(n node, selected, current, flat bool, width int) string
 			name = chip(st.Bold(true), n.name, filled)
 		}
 		post = mutedStyle.Render(" " + strconv.Itoa(n.count))
+	case localNode:
+		mark := "  "
+		if m.hasOpenLocalTab() {
+			mark = okStyle.Render("● ")
+		}
+		pre = mark
+		name = n.name
+		if marked {
+			name = chip(st, n.name, filled)
+		}
+		post = mutedStyle.Render(" " + T("this computer"))
 	case sessionNode:
 		mark := "  "
 		if m.hasOpenTab(n.id()) {
@@ -1378,6 +1415,8 @@ func (m Model) renderDetails(width int) string {
 	lines = append(lines, mutedStyle.Render(strings.Repeat("─", width)))
 	n, ok := m.current()
 	switch {
+	case ok && n.kind == localNode:
+		lines = append(lines, m.localDetails()...)
 	case ok && n.session != nil:
 		r, err := m.cfg.Resolve(n.path, n.session)
 		if err != nil {

@@ -124,6 +124,8 @@ func mark(colorV, fillV string) (lipgloss.Style, bool) {
 func (m Model) nodeMark(n node) (st lipgloss.Style, marked, filled bool) {
 	var d config.Defaults
 	switch {
+	case n.kind == localNode:
+		d.Color, d.Fill = m.opts.Settings.LocalColor, m.opts.Settings.LocalFill
 	case n.kind == folderNode:
 		d = m.cfg.FolderDefaults(n.path)
 	case n.session != nil:

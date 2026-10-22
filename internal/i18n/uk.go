@@ -32,8 +32,8 @@ var uk = map[string]string{
 	"New session: %s.  Help: %s.":                                                  "Нова сесія: %s.  Довідка: %s.",
 	"Inside a tab every key goes to the server, except %s:":                        "У вкладці всі клавіші йдуть на сервер, крім %s:",
 	"%[1]s 1-9 switch tab · %[1]s s sidebar · %[1]s w close · %[1]s [ scroll back": "%[1]s 1-9 вкладка · %[1]s s сайдбар · %[1]s w закрити · %[1]s [ історія",
-	"1-9 tab · n/p · s sidebar · t tunnels · e edit session · k install key · , settings · b hide · w close · r reconnect · d dup · [ scroll · ? help · q quit":           "1-9 вкладка · n/p · s сайдбар · t тунелі · e редагувати · k встановити ключ · , налаштування · b сховати · w закрити · r перепідключити · d дубль · [ історія · ? довідка · q вийти",
-	"⏎ open · n new · N folder · R rename · x/p move · y/p copy · c dup · e edit · C colors · d delete · / search · t tunnels · E file · , settings · %s ? help · q quit": "⏎ відкрити · n нова · N папка · R перейменувати · x/p перенести · y/p копіювати · c дубль · e редагувати · C кольори · d видалити · / пошук · t тунелі · E файл · , налаштування · %s ? довідка · q вийти",
+	"1-9 tab · n/p · s sidebar · l local shell · t tunnels · e edit session · k install key · , settings · b hide · w close · r reconnect · d dup · [ scroll · ? help · q quit": "1-9 вкладка · n/p · s сайдбар · l локальний shell · t тунелі · e редагувати · k встановити ключ · , налаштування · b сховати · w закрити · r перепідключити · d дубль · [ історія · ? довідка · q вийти",
+	"⏎ open · n new · N folder · R rename · x/p move · y/p copy · c dup · e edit · C colors · d delete · / search · t tunnels · E file · , settings · %s ? help · q quit":       "⏎ відкрити · n нова · N папка · R перейменувати · x/p перенести · y/p копіювати · c дубль · e редагувати · C кольори · d видалити · / пошук · t тунелі · E файл · , налаштування · %s ? довідка · q вийти",
 
 	// ---- confirmations
 	"Close %s?":                                                   "Закрити %s?",
@@ -137,6 +137,20 @@ var uk = map[string]string{
 	"host is required":                                        "потрібен хост",
 	"port must be 1-65535":                                    "порт має бути від 1 до 65535",
 	"tunnels":                                                 "тунелі",
+
+	// ---- local shell
+	"Local shell":                     "Локальний shell",
+	"Local cmd":                       "Команда shell",
+	"this computer":                   "цей комп'ютер",
+	"local: %s":                       "локально: %s",
+	"The shell has exited.":           "Shell завершився.",
+	"the shell exited with status %d": "shell завершився з кодом %d",
+	"the \"local\" entry at the top of the tree (also prefix + l)":       "пункт «local» угорі дерева (також prefix + l)",
+	"runs in local tabs instead of $SHELL, e.g. zsh -l (new tabs)":       "запускається в локальних вкладках замість $SHELL, напр. zsh -l (нові вкладки)",
+	"the local shell is built in; hide it in the settings (local_shell)": "локальний shell вбудований; сховати його можна в налаштуваннях (local_shell)",
+	"the local shell is set up in the settings":                          "локальний shell налаштовується в налаштуваннях",
+	"the local shell needs no key; open an SSH session to install one":   "локальному shell ключ не потрібен; щоб встановити ключ, відкрий SSH-сесію",
+	"tunnels need an SSH session; the local shell has none":              "тунелям потрібна SSH-сесія, а в локального shell її немає",
 
 	// ---- color marks
 	"Color":                        "Колір",

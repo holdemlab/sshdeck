@@ -30,6 +30,7 @@ cmd/sshdeck/          entry point, flags
 internal/config/      sessions.yaml and config.yaml: types, load/save, inheritance, tree operations
 internal/sshclient/   SSH client: routing through jump hosts, authentication, known_hosts, pty, key install
 internal/tunnel/      tunnels L / R / D (SOCKS5)
+internal/localshell/   local shell tabs in a pseudo-terminal
 internal/sshtest/     an in-process SSH server for tests
 internal/ui/          Bubble Tea model: tabs, tree, forms, dialogs, themes
 internal/i18n/        interface translations
