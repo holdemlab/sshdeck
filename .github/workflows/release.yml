@@ -1,0 +1,52 @@
+name: Release
+
+# Builds and publishes a GitHub release for a tag:
+# - a vX.Y.Z tag pushed by hand,
+# - a tag created by the auto-tag workflow (it calls this workflow),
+# - or run by hand from the Actions tab for an existing tag.
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_call:
+    inputs:
+      tag:
+        description: tag to release
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: existing tag to release, e.g. v0.2.0
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0 # goreleaser builds the changelog from the history
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: test
+        run: make test
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ env.TAG }}

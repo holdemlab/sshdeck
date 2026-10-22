@@ -1,0 +1,59 @@
+name: CI
+
+# Pull requests into the default branch are tested here. The auto-tag
+# workflow also calls this workflow after a merge, before it tags.
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt, go vet, go mod tidy
+        run: make lint
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: tests with the race detector
+        run: make race
+
+  linux:
+    # Linux binaries for every pull request, downloadable from the run page
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # for the version in `git describe`
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: build linux/amd64 and linux/arm64
+        run: make linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sshdeck-linux
+          path: dist/sshdeck-linux-*
+          retention-days: 7

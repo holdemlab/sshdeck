@@ -1,0 +1,61 @@
+name: Auto tag
+
+# After a pull request is merged into the default branch: run the checks
+# again on the merged code, pick the next version from the commit messages
+# (scripts/next-version.sh, Conventional Commits) and push the tag. The
+# release is started from here, because a tag pushed with GITHUB_TOKEN does
+# not trigger other workflows.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autotag
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  tag:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.next.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # all commits and tags
+      - name: next version
+        id: next
+        run: |
+          tag=$(bash scripts/next-version.sh -v)
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ -n "$tag" ]; then
+            echo "Next version: **$tag**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No release: nothing but docs/test/chore/ci changes, or [skip release]." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: push the tag
+        if: steps.next.outputs.tag != ''
+        env:
+          TAG: ${{ steps.next.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+  release:
+    needs: tag
+    if: needs.tag.outputs.tag != ''
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.tag.outputs.tag }}

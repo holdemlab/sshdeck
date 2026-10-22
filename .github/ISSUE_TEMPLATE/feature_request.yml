@@ -1,0 +1,16 @@
+name: Feature request
+description: An idea for sshdeck
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do?
+      description: The task or the annoyance, in your own words. How do you do it today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could sshdeck help?
+      description: Keys, settings, what it would look like. Mention tools that already do it well.
