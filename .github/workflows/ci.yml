@@ -52,7 +52,7 @@ jobs:
           go-version-file: go.mod
       - name: build linux/amd64 and linux/arm64
         run: make linux
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sshdeck-linux
           path: dist/sshdeck-linux-*
