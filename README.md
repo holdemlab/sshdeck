@@ -25,6 +25,8 @@ single static binary.
   (including all at once: `H` / `L`) are remembered between runs.
 - **Inheritance:** `user`, `port`, `jump`, `identity` are set on a folder and
   apply to everything inside.
+- **Mouse:** click tabs and the tree, scroll with the wheel, drag the
+  sidebar edge; vim, htop and mc in the tabs get the mouse too.
 - **Local shell:** the `local` entry at the top of the tree (or `ctrl+a l`)
   opens a tab with a shell on this computer, next to your SSH tabs.
 - **Jump hosts and chains** (like `ProxyJump`), with its own key on each hop.
@@ -108,7 +110,7 @@ docs/                 documentation (en), docs/uk/ (uk); help.md and uk/help.md 
 1. **Multi-exec**: typing into several tabs at once (like cluster in Ásbrú).
 2. **SFTP browser**: a two-pane file manager.
 3. **Splits**: two tabs side by side in one window.
-4. Mouse (wheel scrolling, clicks on tabs) and ssh-agent forwarding.
+4. ssh-agent forwarding.
 
 Ideas and votes are welcome in [issues](https://github.com/holdemlab/sshdeck/issues).
 

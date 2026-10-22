@@ -97,6 +97,10 @@ type Tab struct {
 	scroll int // lines scrolled back; 0 = live view (UI goroutine only)
 
 	local bool // a shell on this computer, no SSH
+
+	// mouseModes has a bit for every mouse reporting mode the program in
+	// the tab turned on (vim with mouse=a, htop, mc…); 0: it wants no mouse.
+	mouseModes atomic.Uint32
 }
 
 // linePrompt is an in-tab question (password, host key, passphrase).
@@ -116,6 +120,12 @@ func newTab(id int, s config.Resolved, width, height, scrollback int, n *Notifie
 	themeEmulator(emu, curTheme)
 	emu.SetScrollbackSize(scrollback)
 	t := &Tab{id: id, session: s, emu: emu, notify: n, tunnelOnly: tunnelOnly}
+	// Track mouse reporting. The callbacks run inside Write, under the
+	// emulator's lock: they only touch an atomic.
+	emu.SetCallbacks(vt.Callbacks{
+		EnableMode:  func(m ansi.Mode) { t.trackMouse(m, true) },
+		DisableMode: func(m ansi.Mode) { t.trackMouse(m, false) },
+	})
 	for _, fw := range s.Forwards {
 		if sp, err := tunnel.Parse(fw); err == nil {
 			f := t.newForward(sp)
@@ -125,6 +135,26 @@ func newTab(id int, s config.Resolved, width, height, scrollback int, n *Notifie
 	go t.pumpInput()
 	return t
 }
+
+var trackedMouseModes = []ansi.Mode{ansi.ModeMouseX10, ansi.ModeMouseNormal, ansi.ModeMouseHighlight, ansi.ModeMouseButtonEvent, ansi.ModeMouseAnyEvent}
+
+// trackMouse notes a program turning mouse reporting on or off.
+func (t *Tab) trackMouse(m ansi.Mode, on bool) {
+	for i, mm := range trackedMouseModes {
+		if m == mm {
+			bit := uint32(1) << i
+			if on {
+				t.mouseModes.Or(bit)
+			} else {
+				t.mouseModes.And(^bit)
+			}
+			return
+		}
+	}
+}
+
+// wantsMouse reports whether the program in the tab handles the mouse.
+func (t *Tab) wantsMouse() bool { return t.mouseModes.Load() > 0 }
 
 // title is the label in the tab bar.
 func (t *Tab) title() string {
@@ -222,6 +252,7 @@ func (t *Tab) connect(cfg *config.Config, s config.Settings, sec *sshclient.Secr
 	}
 	t.state, t.reason, t.ctx, t.cancel = stateConnecting, "", ctx, cancel
 	t.mu.Unlock()
+	t.mouseModes.Store(0) // a new program starts without mouse reporting
 	t.changed()
 
 	sess := t.session // snapshot: the UI may update t.session while connected

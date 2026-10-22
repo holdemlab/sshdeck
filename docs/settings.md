@@ -20,6 +20,7 @@ run. You can change settings on the settings screen in sshdeck or by hand.
 | `identities` | `~/.ssh/id_ed25519`, `~/.ssh/id_ecdsa`, `~/.ssh/id_rsa` | list of paths | keys tried for **every** session after its own key; missing files are skipped | next connection |
 | `remember_passwords` | `true` | `true` / `false` | remember accepted passwords and key passphrases in memory until exit; nothing is written to disk; turning it off clears what was remembered, see [authentication.md](authentication.md#remembering-passwords-in-memory) | immediately |
 | `confirm_close` | `true` | `true` / `false` | ask before closing a tab with a live connection | immediately |
+| `mouse` | `true` | `true` / `false` | mouse in sshdeck and for programs in the tabs; text is then selected with Shift, see [keys.md](keys.md#mouse) | immediately |
 | `local_shell` | `true` | `true` / `false` | show the `local` entry at the top of the tree, see [below](#local-shell) | immediately |
 | `local_command` | empty (`$SHELL`) | a command line | what local tabs run instead of `$SHELL`, e.g. `zsh -l` | new local tabs |
 | `local_color`, `local_fill` | empty | palette name, `#rrggbb` | color mark of the `local` entry and its tabs, like [session colors](sessions.md#color-marks) | immediately |
@@ -45,6 +46,7 @@ Settings  ~/.config/sshdeck/config.yaml
   known_hosts    ~/.config/sshdeck/known_hosts
   ssh-agent      [x] on
   Keys           ~/.ssh/id_ed25519, ~/.ssh/id_ecdsa, ~/.ssh/id_rsa
+  Mouse          [x] on
   Local shell    [x] on
   Local cmd      $SHELL
   Remember pw    [x] on

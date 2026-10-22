@@ -138,6 +138,11 @@ var uk = map[string]string{
 	"port must be 1-65535":                                    "порт має бути від 1 до 65535",
 	"tunnels":                                                 "тунелі",
 
+	// ---- mouse
+	"Mouse":                  "Миша",
+	"sidebar width %d saved": "ширину сайдбара %d збережено",
+	"clicks, wheel, sidebar drag; select text with Shift held": "кліки, колесо, перетягування сайдбара; текст виділяй із затиснутим Shift",
+
 	// ---- local shell
 	"Local shell":                     "Локальний shell",
 	"Local cmd":                       "Команда shell",
