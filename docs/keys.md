@@ -1,7 +1,8 @@
 # Keys
 
 The screen has three parts:
-- the tab bar at the top: `sshdeck`, then the tabs `1 web-01 ●`, `2 db ⇄1 ●`;
+- the tab bar at the top: `sshdeck`, then the tabs `1 web-01 ●`, `2 db ⇄1 ●`,
+  and the version on the right (`v0.2.0`);
 - the sidebar with the session tree on the left;
 - the active tab's terminal on the right.
 

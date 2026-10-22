@@ -1419,3 +1419,22 @@ func TestColorMarks(t *testing.T) {
 		t.Errorf("junk color accepted: %q", m.form.err)
 	}
 }
+
+// The build version shows at the right end of the tab bar and in the help.
+func TestVersionShown(t *testing.T) {
+	m, _ := setup(t, treeYAML)
+	m.opts.Version = "v1.2.3"
+	first := strings.Split(ansi.Strip(m.View().Content), "\n")[0]
+	if !strings.HasSuffix(strings.TrimRight(first, " "), "v1.2.3") {
+		t.Errorf("tab bar: %q", first)
+	}
+	m = send(m, keys("?")...)
+	if !strings.Contains(ansi.Strip(m.View().Content), "sshdeck v1.2.3") {
+		t.Error("version not in the help footer")
+	}
+	m = send(m, keys("esc")...)
+	m = send(m, tea.WindowSizeMsg{Width: 12, Height: 20})
+	if strings.Contains(strings.Split(ansi.Strip(m.View().Content), "\n")[0], "v1.2.3") {
+		t.Error("version squeezed into a too narrow tab bar")
+	}
+}

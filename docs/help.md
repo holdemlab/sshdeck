@@ -157,6 +157,11 @@ mix up `prod` and `staging`. In `sessions.yaml` these are `color:` and `fill:`
 `Latte` (light), `Frappé`, `Macchiato`, `Mocha`. The scheme shows at once while
 you choose and also colors the programs in the tabs.
 
+## Version
+
+The running version is at the right end of the tab bar and at the bottom of
+this help. Details: `sshdeck --version` (commit, build date, Go, platform).
+
 ## Files
 
 | File | What's in it |

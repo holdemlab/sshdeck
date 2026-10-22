@@ -5,27 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime/debug"
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/holdemlab/sshdeck/internal/buildinfo"
 	"github.com/holdemlab/sshdeck/internal/config"
 	"github.com/holdemlab/sshdeck/internal/i18n"
 	"github.com/holdemlab/sshdeck/internal/ui"
 )
-
-// version is set at release time (-ldflags "-X main.version=v1.2.3"); for
-// "go install …@v1.2.3" it comes from the module's build info.
-var version = "dev"
-
-func versionString() string {
-	if version == "dev" {
-		if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
-			return bi.Main.Version
-		}
-	}
-	return version
-}
 
 func main() {
 	defSessions, err := config.DefaultPath()
@@ -38,11 +25,14 @@ func main() {
 	}
 	sessionsPath := flag.String("sessions", defSessions, "path to sessions.yaml")
 	settingsPath := flag.String("config", defSettings, "path to config.yaml (settings)")
-	showVersion := flag.Bool("version", false, "print version and exit")
+	var showVersion bool
+	flag.BoolVar(&showVersion, "version", false, "print version, commit and build date, then exit")
+	flag.BoolVar(&showVersion, "v", false, "same as -version")
 	flag.Parse()
 
-	if *showVersion {
-		fmt.Println("sshdeck", versionString())
+	build := buildinfo.Get()
+	if showVersion {
+		fmt.Print(build.Long())
 		return
 	}
 	// A broken config.yaml should not lock you out of the settings screen:
@@ -68,6 +58,7 @@ func main() {
 		Settings:     settings,
 		Notifier:     notifier,
 		StartupError: startupErr,
+		Version:      build.Short(),
 	})
 	if err != nil {
 		fail(err)
