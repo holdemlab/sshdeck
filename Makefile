@@ -4,8 +4,11 @@ BINARY   := sshdeck
 PKG      := ./cmd/sshdeck
 BIN_DIR  := bin
 DIST_DIR := dist
-VERSION  ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS  := -s -w -X main.version=$(VERSION)
+VERSION  ?= $(shell git describe --tags --dirty --match 'v*' 2>/dev/null || echo dev)
+COMMIT   ?= $(shell git rev-parse --short HEAD 2>/dev/null)
+DATE     ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+BI       := github.com/holdemlab/sshdeck/internal/buildinfo
+LDFLAGS  := -s -w -X $(BI).Version=$(VERSION) -X $(BI).Commit=$(COMMIT) -X $(BI).Date=$(DATE)
 BUILDFLAGS ?= -trimpath
 LINUX_ARCHES := amd64 arm64
 

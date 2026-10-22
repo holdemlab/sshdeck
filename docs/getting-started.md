@@ -83,7 +83,29 @@ program. All settings live only in these files.
 |---|---|---|
 | `-sessions FILE` | `~/.config/sshdeck/sessions.yaml` | use a different sessions file |
 | `-config FILE` | `~/.config/sshdeck/config.yaml` | use a different settings file (the template is created only for the default path) |
-| `-version` | | print the version and exit |
+| `-version`, `--version`, `-v` | | print the version, commit, date, Go version and platform, then exit |
+
+### Which version is running
+
+```
+$ sshdeck --version
+sshdeck v0.2.0
+commit  93b4dee
+date    2026-10-22 14:41 UTC
+go      go1.26.7 linux/amd64
+```
+
+The version is also shown all the time at the right end of the tab bar (it
+hides when the tabs need the room) and at the bottom of the help
+(`ctrl+a ?`).
+
+| Version | Where the build came from |
+|---|---|
+| `v0.2.0` | a release, or `go install …@v0.2.0` |
+| `v0.2.0-3-g93b4dee` | `make` three commits after the `v0.2.0` tag |
+| `…-dirty`, `…+dirty`, `…*` | built from a tree with uncommitted changes |
+| `dev+93b4dee` | built from a checkout without tags; the commit is shown |
+| `dev` | nothing is known: built outside git without version flags |
 
 ## Your first session
 

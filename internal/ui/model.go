@@ -57,6 +57,7 @@ type Options struct {
 	Settings     config.Settings
 	Notifier     *Notifier
 	StartupError string // shown in the status bar on start
+	Version      string // build version, shown in the tab bar ("v1.2.3", "dev+abc1234")
 }
 
 // Model is the root Bubble Tea model.
@@ -1208,6 +1209,13 @@ func (m Model) renderTabBar() string {
 	bar := strings.Join(parts, barStyle.Render(" "))
 	if lipgloss.Width(bar) > m.width {
 		bar = ansi.Truncate(bar, m.width-1, "…")
+	}
+	// the build version sits at the right end while there is room for it
+	if v := m.opts.Version; v != "" {
+		ver := barStyle.Foreground(muted).Render(v + " ")
+		if gap := m.width - lipgloss.Width(bar) - lipgloss.Width(ver); gap >= 2 {
+			bar += barStyle.Render(strings.Repeat(" ", gap)) + ver
+		}
 	}
 	return barStyle.Width(m.width).Render(bar)
 }

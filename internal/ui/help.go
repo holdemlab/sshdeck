@@ -179,6 +179,9 @@ func (m Model) renderHelpBox() string {
 	if hv.err != "" {
 		footer = errStyle.Render("markdown: "+hv.err) + "  " + footer
 	}
+	if v := m.opts.Version; v != "" && !hv.typing {
+		footer = mutedStyle.Render("sshdeck "+v+" · ") + footer
+	}
 	w, h := m.helpSize()
 	body := hv.vp.View() + "\n" + ansi.Truncate(footer, w-4, "…")
 	return helpBox.Width(w).Height(h).Render(body)
