@@ -7,7 +7,7 @@ name: Auto tag
 # not trigger other workflows.
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 permissions:
   contents: read

@@ -4,7 +4,7 @@ name: CI
 # workflow also calls this workflow after a merge, before it tags.
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
   workflow_call:
   workflow_dispatch:
 
