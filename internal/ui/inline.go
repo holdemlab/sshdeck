@@ -252,19 +252,24 @@ func (m *Model) paste(top bool) {
 		m.pasteCopy(m.clip.node, dest)
 		return // the clipboard stays: paste again for more copies
 	}
-	c := m.clip.node
+	if m.moveNode(m.clip.node, dest) {
+		m.clip = nil
+	}
+}
+
+// moveNode moves a session or folder into dest; it reports success.
+func (m *Model) moveNode(c node, dest []string) bool {
 	var err error
 	if c.kind == folderNode {
 		if strings.HasPrefix(strings.Join(dest, "/")+"/", c.id()+"/") {
 			m.setStatus(false, "cannot move %s into itself", c.id())
-			return
+			return false
 		}
 		err = m.moveFolder(c.path, append(append([]string{}, dest...), c.name))
 	} else {
 		if strings.Join(dest, "/") == strings.Join(c.path, "/") {
-			m.clip = nil
 			m.setStatus(true, "%s is already in %s", c.name, displayPath(dest))
-			return
+			return true
 		}
 		cfg := m.cfg.Session(c.path, c.name)
 		if cfg == nil {
@@ -281,9 +286,9 @@ func (m *Model) paste(top bool) {
 	}
 	if err != nil {
 		m.setStatus(false, "%v", err)
-		return
+		return false
 	}
-	m.clip = nil
+	return true
 }
 
 // pasteCopy copies a session or folder into dest.

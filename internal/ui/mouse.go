@@ -63,6 +63,8 @@ func (m Model) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case m.overlay == overlayMenu:
 		return m.menuMouse(msg)
+	case m.overlay == overlayDest:
+		return m.destMouse(msg)
 	case m.overlay != overlayNone, m.settingsOpen, m.prefixArmed:
 		return m, nil // dialogs are driven by the keyboard
 	}

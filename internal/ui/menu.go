@@ -52,15 +52,15 @@ func (m Model) menuFor(n node, ok bool) []menuItem {
 		items = []menuItem{fold, sep(),
 			{T("New session here"), "n"}, {T("New folder here"), "N"}, sep(),
 			{T("Edit…"), "e"}, {T("Colors…"), "C"}, {T("Rename"), "R"}, sep(),
-			{T("Duplicate"), "c"}, {T("Copy"), "y"}, {T("Cut"), "x"}}
+			{T("Duplicate here"), "c"}, {T("Copy to…"), "Y"}, {T("Move to…"), "X"}}
 		paste()
 	default:
 		items = []menuItem{{T("Open"), "enter"}, {T("Open tunnels only"), "t"}, sep(),
 			{T("Edit…"), "e"}, {T("Colors…"), "C"}, {T("Rename"), "R"}, sep(),
-			{T("Duplicate"), "c"}, {T("Copy"), "y"}, {T("Cut"), "x"}}
+			{T("Duplicate here"), "c"}, {T("Copy to…"), "Y"}, {T("Move to…"), "X"}}
 		paste()
 	}
-	return append(items, sep(), menuItem{T("Delete…"), "d"})
+	return append(items, sep(), menuItem{T("Delete"), "d"})
 }
 
 // openMenu shows the menu for the selected entry (or the empty tree) with

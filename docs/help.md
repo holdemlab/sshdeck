@@ -61,6 +61,7 @@ Always work: both in the terminal and in the tree.
 | `c` | duplicate next to it |
 | `y`, then `p` | copy into the selected folder (`P` — to the top level) |
 | `x`, then `p` | move into the selected folder (`P` — to the top level) |
+| `Y` / `X` | copy to… / move to…: pick the folder from a list |
 | `d` | delete (with confirmation) |
 | `E` | open `sessions.yaml` in the editor |
 | `r` | reload `sessions.yaml` |

@@ -1712,7 +1712,7 @@ func TestContextMenu(t *testing.T) {
 	if m.overlay != overlayMenu || m.cursor != 1 {
 		t.Fatalf("menu: overlay %v cursor %d", m.overlay, m.cursor)
 	}
-	for _, want := range []string{"Open", "Open tunnels only", "Edit…", "Rename", "Duplicate", "Copy", "Cut", "Delete…"} {
+	for _, want := range []string{"Open", "Open tunnels only", "Edit…", "Rename", "Duplicate here", "Copy to…", "Move to…", "Delete"} {
 		if !strings.Contains(m.menuText(), want) {
 			t.Errorf("session menu lacks %q:\n%s", want, m.menuText())
 		}
@@ -1733,7 +1733,7 @@ func TestContextMenu(t *testing.T) {
 		t.Fatal("esc did not close the menu")
 	}
 
-	// a click on "Delete…" asks to delete web-01
+	// a click on "Delete" asks to delete web-01
 	m = send(m, tea.MouseClickMsg{X: 8, Y: 4, Button: tea.MouseRight})
 	r := m.menuRect()
 	del := -1
@@ -1753,12 +1753,12 @@ func TestContextMenu(t *testing.T) {
 	if m.overlay != overlayMenu || !strings.Contains(m.menuText(), "New folder here") || !strings.Contains(m.menuText(), "Collapse") {
 		t.Fatalf("folder menu:\n%s", m.menuText())
 	}
-	m = send(m, keys("y")...) // Copy
-	if m.clip == nil || !m.clip.copy {
-		t.Fatal("y from the menu did not copy")
+	m = send(m, keys("Y")...) // Copy to…
+	if m.overlay != overlayDest || !m.dest.copy {
+		t.Fatal("Y from the menu did not open Copy to…")
 	}
-	m = send(m, keys("esc")...) // drop the clipboard mode message
-	m.clip = &clipboard{node: m.rows[0], copy: true}
+	m = send(m, keys("esc")...)
+	m.clip = &clipboard{node: m.rows[0], copy: true} // y in the tree (clipboard mode)
 	m = send(m, keys("m")...)
 	if !strings.Contains(m.menuText(), "Paste here") {
 		t.Error("Paste not offered with a copied entry")
@@ -1785,5 +1785,55 @@ func TestContextMenu(t *testing.T) {
 	m = send(m, click(m.width-2, m.height-3))
 	if m.overlay != overlayNone {
 		t.Error("click outside did not close the menu")
+	}
+}
+
+// Copy to… / Move to…: pick the destination from a list of folders.
+func TestDestPicker(t *testing.T) {
+	m, path := setup(t, folderYAML)
+	// web-01 is in prod; copy it to infra by filtering and enter
+	m = selectKey(t, m, "s:prod/web-01")
+	m = send(m, keys("Y")...)
+	if m.overlay != overlayDest || len(m.dest.shown) < 3 {
+		t.Fatalf("picker: overlay %v dests %v", m.overlay, m.dest.shown)
+	}
+	if got := displayPath(m.dest.shown[m.dest.sel]); got != "prod" {
+		t.Errorf("starts at %q, want where it is now", got)
+	}
+	m = send(m, text("infr")...)
+	if len(m.dest.shown) != 1 || displayPath(m.dest.shown[0]) != "infra" {
+		t.Fatalf("filter: %v", m.dest.shown)
+	}
+	m = send(m, keys("enter")...)
+	cfg, _ := config.Load(path)
+	if cfg.Session([]string{"infra"}, "web-01") == nil || cfg.Session([]string{"prod"}, "web-01") == nil {
+		t.Fatal("copy to infra failed")
+	}
+	if m.overlay != overlayNone || !m.statusOK {
+		t.Errorf("after copy: overlay %v status %q", m.overlay, m.status)
+	}
+
+	// a folder cannot be moved into itself: prod and below are not offered
+	m = selectKey(t, m, "f:prod")
+	m = send(m, keys("X")...)
+	for _, p := range m.dest.shown {
+		if strings.HasPrefix(strings.Join(p, "/")+"/", "prod/") || strings.Join(p, "/") == "prod" {
+			t.Errorf("offered %v as a destination for prod", p)
+		}
+	}
+	// move prod into infra with the mouse: click the "infra" line
+	idx := -1
+	for i, p := range m.dest.shown {
+		if displayPath(p) == "infra" {
+			idx = i
+		}
+	}
+	box := overlayStyle.Render(m.renderDestPicker())
+	y0 := max((m.height-lipgloss.Height(box))/2, 0)
+	x0 := max((m.width-lipgloss.Width(box))/2, 0)
+	m = send(m, click(x0+4, y0+5+idx-m.dest.top))
+	cfg, _ = config.Load(path)
+	if cfg.FolderAt([]string{"infra", "prod"}) == nil || cfg.FolderAt([]string{"prod"}) != nil {
+		t.Fatalf("move by click failed: %s", m.status)
 	}
 }
