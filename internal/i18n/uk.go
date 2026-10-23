@@ -32,8 +32,8 @@ var uk = map[string]string{
 	"New session: %s.  Help: %s.":                                                  "Нова сесія: %s.  Довідка: %s.",
 	"Inside a tab every key goes to the server, except %s:":                        "У вкладці всі клавіші йдуть на сервер, крім %s:",
 	"%[1]s 1-9 switch tab · %[1]s s sidebar · %[1]s w close · %[1]s [ scroll back": "%[1]s 1-9 вкладка · %[1]s s сайдбар · %[1]s w закрити · %[1]s [ історія",
-	"1-9 tab · n/p · s sidebar · l local shell · t tunnels · e edit session · k install key · , settings · b hide · w close · r reconnect · d dup · [ scroll · ? help · q quit": "1-9 вкладка · n/p · s сайдбар · l локальний shell · t тунелі · e редагувати · k встановити ключ · , налаштування · b сховати · w закрити · r перепідключити · d дубль · [ історія · ? довідка · q вийти",
-	"⏎ open · n new · N folder · R rename · x/p move · y/p copy · c dup · e edit · C colors · d delete · / search · t tunnels · E file · , settings · %s ? help · q quit":       "⏎ відкрити · n нова · N папка · R перейменувати · x/p перенести · y/p копіювати · c дубль · e редагувати · C кольори · d видалити · / пошук · t тунелі · E файл · , налаштування · %s ? довідка · q вийти",
+	"1-9 tab · n/p · s sidebar · l local shell · t tunnels · e edit session · k install key · , settings · b hide · w close · r reconnect · d dup · [ scroll · ? help · q quit":    "1-9 вкладка · n/p · s сайдбар · l локальний shell · t тунелі · e редагувати · k встановити ключ · , налаштування · b сховати · w закрити · r перепідключити · d дубль · [ історія · ? довідка · q вийти",
+	"⏎ open · m menu · n new · N folder · R rename · x/p move · y/p copy · c dup · e edit · C colors · d delete · / search · t tunnels · E file · , settings · %s ? help · q quit": "⏎ відкрити · m меню · n нова · N папка · R перейменувати · x/p перенести · y/p копіювати · c дубль · e редагувати · C кольори · d видалити · / пошук · t тунелі · E файл · , налаштування · %s ? довідка · q вийти",
 
 	// ---- confirmations
 	"Close %s?":                                                   "Закрити %s?",
@@ -137,6 +137,25 @@ var uk = map[string]string{
 	"host is required":                                        "потрібен хост",
 	"port must be 1-65535":                                    "порт має бути від 1 до 65535",
 	"tunnels":                                                 "тунелі",
+
+	// ---- context menu
+	"Open":                   "Відкрити",
+	"Open tunnels only":      "Відкрити тільки тунелі",
+	"Edit…":                  "Редагувати…",
+	"Colors…":                "Кольори…",
+	"Rename":                 "Перейменувати",
+	"Duplicate":              "Дублювати",
+	"Copy":                   "Копіювати",
+	"Cut":                    "Вирізати",
+	"Paste here":             "Вставити сюди",
+	"Paste at the top level": "Вставити на верхній рівень",
+	"Delete…":                "Видалити…",
+	"Expand":                 "Розгорнути",
+	"Collapse":               "Згорнути",
+	"New session here":       "Нова сесія тут",
+	"New folder here":        "Нова папка тут",
+	"New folder":             "Нова папка",
+	"Settings…":              "Налаштування…",
 
 	// ---- mouse
 	"Mouse":                  "Миша",
