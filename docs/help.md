@@ -56,6 +56,7 @@ Always work: both in the terminal and in the tree.
 | `N` | new folder (`a/b` nested, `/name` at the top level) |
 | `R` | rename in place |
 | `e` | edit session or folder (form) |
+| `m` / right click | context menu: edit, copy, move, delete… |
 | `C` | colors: text and fill (e.g. `prod` in red) |
 | `c` | duplicate next to it |
 | `y`, then `p` | copy into the selected folder (`P` — to the top level) |

@@ -47,6 +47,7 @@ const (
 	overlayConfirmDelete
 	overlayInstallKey
 	overlayColors
+	overlayMenu
 )
 
 // Options configure the UI.
@@ -91,6 +92,7 @@ type Model struct {
 	secrets *sshclient.Secrets
 
 	colors colorDialog // C in the tree (overlayColors)
+	menu   contextMenu // right click / m in the tree (overlayMenu)
 	// install-key dialog (overlayInstallKey)
 	key keyDialog
 
@@ -312,6 +314,8 @@ func (m Model) handleKey(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.keyDialogKey(k)
 	case overlayColors:
 		return m.colorKey(k)
+	case overlayMenu:
+		return m.menuKey(k)
 	case overlayConfirmDelete:
 		m.overlay = overlayNone
 		if k.String() == "y" {
@@ -776,6 +780,10 @@ func (m Model) updateSidebar(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case "C":
 		m.openColorDialog()
 		return m, nil
+	case "m", "menu":
+		row := 3 + m.cursor - m.offset // tab bar, title, search, rows
+		m.openMenu(4, row+1, len(m.rows) == 0)
+		return m, nil
 	case "E":
 		return m, openEditor(m.opts.ConfigPath, editSessions)
 	case ",":
@@ -1163,6 +1171,8 @@ func (m Model) View() tea.View {
 		m.drawCentered(canvas, overlayStyle.Render(m.renderKeyDialog()))
 	case overlayColors:
 		m.drawCentered(canvas, overlayStyle.Render(m.renderColorDialog()))
+	case overlayMenu:
+		m.drawMenu(canvas)
 	case overlayTunnels:
 		if t != nil {
 			m.drawCentered(canvas, overlayStyle.Render(m.renderTunnels(t)))
@@ -1299,7 +1309,7 @@ func (m Model) renderStatusBar() string {
 		left = mutedStyle.Render(m.opts.Settings.Prefix+" ? "+T("help")) + "  " + info +
 			mutedStyle.Render(fmt.Sprintf("  %d×%d", t.emu.Width(), t.emu.Height()))
 	default:
-		left = mutedStyle.Render(T("⏎ open · n new · N folder · R rename · x/p move · y/p copy · c dup · e edit · C colors · d delete · / search · t tunnels · E file · , settings · %s ? help · q quit", m.opts.Settings.Prefix))
+		left = mutedStyle.Render(T("⏎ open · m menu · n new · N folder · R rename · x/p move · y/p copy · c dup · e edit · C colors · d delete · / search · t tunnels · E file · , settings · %s ? help · q quit", m.opts.Settings.Prefix))
 	}
 	if m.status != "" && !m.prefixArmed {
 		st := okStyle.Render("● " + m.status)

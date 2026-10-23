@@ -61,6 +61,8 @@ func (m Model) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 		return m, nil
+	case m.overlay == overlayMenu:
+		return m.menuMouse(msg)
 	case m.overlay != overlayNone, m.settingsOpen, m.prefixArmed:
 		return m, nil // dialogs are driven by the keyboard
 	}
@@ -122,6 +124,19 @@ func (m Model) mouseSidebar(msg tea.MouseMsg, ev tea.Mouse) (tea.Model, tea.Cmd)
 		}
 		m.clampCursor()
 	case tea.MouseClickMsg:
+		if e.Button == tea.MouseRight { // the context menu
+			line := ev.Y - firstRow
+			if line < 0 || line >= m.treeHeight() {
+				return m, nil
+			}
+			row := m.offset + line
+			if row < len(m.rows) {
+				m.cursor = row
+				m.clampCursor()
+			}
+			m.openMenu(ev.X, ev.Y, row >= len(m.rows))
+			return m, nil
+		}
 		if e.Button != tea.MouseLeft {
 			return m, nil
 		}

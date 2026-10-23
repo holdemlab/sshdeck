@@ -55,6 +55,7 @@ status line is highlighted and shows the available commands.
 | `N` or `+` | new folder right in the tree, inside the selected one; `a/b/c` creates nested folders, `/name` creates one at the top level |
 | `R` or `f2` | rename in place |
 | `e` | edit the session or folder (form) |
+| `m` or right click | [context menu](#context-menu) of the entry |
 | `C` | colors of the folder or session: text and fill ([details](sessions.md#color-marks)) |
 | `c` | duplicate next to it: a session opens a copy form, a folder is copied and renamed |
 | `y`, then `p` / `P` | copy into the selected folder / to the top level (`p` again makes one more copy, `esc` finishes) |
@@ -142,6 +143,29 @@ write to the history.
 new size at once. The current size is shown in the status line, for example
 `88×28`.
 
+## Context menu
+
+Right click on an entry in the tree, or `m` on the selected one, lists what
+you can do with it. Every item shows its key, so the menu doubles as a cheat
+sheet.
+
+| Entry | Items |
+|---|---|
+| session | Open, Open tunnels only, Edit…, Colors…, Rename, Duplicate, Copy, Cut, Paste here (after Copy / Cut), Delete… |
+| folder | Collapse / Expand, New session here, New folder here, Edit…, Colors…, Rename, Duplicate, Copy, Cut, Paste here, Delete… |
+| `local` | Open, Colors…, Settings… |
+| empty space below the tree | New session, New folder, Paste at the top level (all at the top level) |
+
+| Key | Action |
+|---|---|
+| `↑↓`, `j k`, `tab` | move |
+| `enter`, `space` | run the item |
+| the item's key (`e`, `R`, `d` …) | run that item |
+| `esc`, `q`, `m` | close |
+
+With the mouse: a click on an item runs it, a click elsewhere closes the
+menu, a right click elsewhere opens a new one there.
+
 ## Mouse
 
 On by default; `mouse: false` in the [settings](settings.md) turns it off.
@@ -149,7 +173,7 @@ On by default; `mouse: false` in the [settings](settings.md) turns it off.
 | Where | What it does |
 |---|---|
 | tab bar | click: switch to the tab; middle click: close it (asks first if it is connected) |
-| tree | click: select; double click: open the session / fold the folder; click on `▾` `▸`: fold at once; wheel: move |
+| tree | click: select; double click: open the session / fold the folder; click on `▾` `▸`: fold at once; right click: [context menu](#context-menu); wheel: move |
 | `/ search` line | click: start a search |
 | sidebar edge `│` | drag: change the sidebar width; it is saved in `config.yaml` |
 | terminal | drag: select text, copied when you let go; double click: a word; triple click: a line; middle click: paste the copied text |

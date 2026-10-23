@@ -1703,3 +1703,87 @@ func TestSelectionInTab(t *testing.T) {
 		t.Error("selection kept after typing")
 	}
 }
+
+// Right click (or m) in the tree opens a context menu of the entry's actions.
+func TestContextMenu(t *testing.T) {
+	m, path := setup(t, treeYAML)
+	// right click on web-01 (row 1, y = 4)
+	m = send(m, tea.MouseClickMsg{X: 8, Y: 4, Button: tea.MouseRight})
+	if m.overlay != overlayMenu || m.cursor != 1 {
+		t.Fatalf("menu: overlay %v cursor %d", m.overlay, m.cursor)
+	}
+	for _, want := range []string{"Open", "Open tunnels only", "Edit…", "Rename", "Duplicate", "Copy", "Cut", "Delete…"} {
+		if !strings.Contains(m.menuText(), want) {
+			t.Errorf("session menu lacks %q:\n%s", want, m.menuText())
+		}
+	}
+	if strings.Contains(m.menuText(), "Paste here") {
+		t.Error("Paste offered with nothing to paste")
+	}
+	if !strings.Contains(ansi.Strip(m.View().Content), "Open tunnels only") {
+		t.Error("menu not drawn")
+	}
+	// the keyboard: down to "Open tunnels only"… then esc closes
+	m = send(m, keys("down")...)
+	if m.menu.items[m.menu.sel].key != "t" {
+		t.Errorf("sel %d", m.menu.sel)
+	}
+	m = send(m, keys("esc")...)
+	if m.overlay != overlayNone {
+		t.Fatal("esc did not close the menu")
+	}
+
+	// a click on "Delete…" asks to delete web-01
+	m = send(m, tea.MouseClickMsg{X: 8, Y: 4, Button: tea.MouseRight})
+	r := m.menuRect()
+	del := -1
+	for i, it := range m.menu.items {
+		if it.key == "d" {
+			del = i
+		}
+	}
+	m = send(m, click(r.Min.X+2, r.Min.Y+1+del))
+	if m.overlay != overlayConfirmDelete || m.delNode.name != "web-01" {
+		t.Fatalf("delete from the menu: overlay %v node %q", m.overlay, m.delNode.name)
+	}
+	m = send(m, keys("n")...)
+
+	// m on a folder, then its letter: c duplicates it
+	m = send(m, keys("g", "m")...)
+	if m.overlay != overlayMenu || !strings.Contains(m.menuText(), "New folder here") || !strings.Contains(m.menuText(), "Collapse") {
+		t.Fatalf("folder menu:\n%s", m.menuText())
+	}
+	m = send(m, keys("y")...) // Copy
+	if m.clip == nil || !m.clip.copy {
+		t.Fatal("y from the menu did not copy")
+	}
+	m = send(m, keys("esc")...) // drop the clipboard mode message
+	m.clip = &clipboard{node: m.rows[0], copy: true}
+	m = send(m, keys("m")...)
+	if !strings.Contains(m.menuText(), "Paste here") {
+		t.Error("Paste not offered with a copied entry")
+	}
+	m = send(m, keys("esc")...)
+
+	// right click below the entries: top-level actions
+	m = send(m, tea.MouseClickMsg{X: 8, Y: 15, Button: tea.MouseRight})
+	if !m.menu.empty || !strings.Contains(m.menuText(), "New folder") || strings.Contains(m.menuText(), "Delete") {
+		t.Fatalf("empty-area menu:\n%s", m.menuText())
+	}
+	m = send(m, keys("N")...)
+	if m.inline.mode != inlineNewFolder || m.inline.parent != nil {
+		t.Fatalf("new top-level folder: mode %v parent %v", m.inline.mode, m.inline.parent)
+	}
+	m = send(m, text("ops")...)
+	m = send(m, keys("enter")...)
+	cfg, _ := config.Load(path)
+	if cfg.FolderAt([]string{"ops"}) == nil {
+		t.Error("top-level folder not created")
+	}
+	// a click outside closes the menu without doing anything else
+	m = send(m, tea.MouseClickMsg{X: 8, Y: 4, Button: tea.MouseRight})
+	m = send(m, click(m.width-2, m.height-3))
+	if m.overlay != overlayNone {
+		t.Error("click outside did not close the menu")
+	}
+}
