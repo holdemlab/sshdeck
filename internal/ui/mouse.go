@@ -18,7 +18,8 @@ import (
 //     tmux) get clicks, drags and the wheel; otherwise the wheel scrolls the
 //     history, or sends arrow keys in full-screen programs;
 //   - help: the wheel scrolls.
-// The terminal's own text selection works with Shift held.
+// Text is selected inside a tab by dragging (selection.go); the terminal's
+// own selection, across the whole window, works with Shift held.
 
 const (
 	doubleClick = 400 * time.Millisecond
@@ -176,7 +177,8 @@ func (m Model) mouseTerminal(msg tea.MouseMsg, x, y int) (tea.Model, tea.Cmd) {
 	x, y = min(max(x, 0), w-1), min(max(y, 0), h-1)
 	pos := uv.Mouse{X: x, Y: y, Button: ev.Button, Mod: ev.Mod}
 
-	if state, _ := t.getState(); state == stateConnected && t.wantsMouse() && !m.scrolling {
+	// programs that use the mouse get it; Alt + drag selects text anyway
+	if state, _ := t.getState(); state == stateConnected && t.wantsMouse() && !m.scrolling && ev.Mod&tea.ModAlt == 0 {
 		switch msg.(type) {
 		case tea.MouseClickMsg:
 			m.mouse.termDown = true
@@ -192,8 +194,25 @@ func (m Model) mouseTerminal(msg tea.MouseMsg, x, y int) (tea.Model, tea.Cmd) {
 		t.scroll = 0
 		return m, nil
 	}
-	if _, ok := msg.(tea.MouseReleaseMsg); ok {
+	switch msg.(type) {
+	case tea.MouseClickMsg:
+		switch ev.Button {
+		case tea.MouseLeft:
+			m.mouse.termDown = true
+			return m, m.selectMouse(t, msg, x, y)
+		case tea.MouseMiddle: // paste what was copied last
+			if m.lastCopy != "" {
+				t.paste(m.lastCopy)
+			}
+			return m, nil
+		}
+	case tea.MouseMotionMsg:
+		if ev.Button == tea.MouseLeft {
+			return m, m.selectMouse(t, msg, x, y)
+		}
+	case tea.MouseReleaseMsg:
 		m.mouse.termDown = false
+		return m, m.selectMouse(t, msg, x, y)
 	}
 	wheel, ok := msg.(tea.MouseWheelMsg)
 	if !ok {

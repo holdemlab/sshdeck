@@ -95,8 +95,10 @@ type Model struct {
 	key keyDialog
 
 	// help screen (overlayHelp)
-	help  helpView
-	mouse mouseState // double clicks, sidebar drag
+	help     helpView
+	mouse    mouseState // double clicks, sidebar drag
+	sel      selection  // text selected in a tab
+	lastCopy string     // the last copied text, for middle click
 
 	darkBG bool // terminal background, for the help theme
 	// colors256: the terminal has 256 colors, not truecolor (themes then
@@ -342,6 +344,7 @@ func (m Model) handleKey(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.scrollKey(t, k)
 			return m, nil
 		}
+		m.sel = selection{} // typing ends the selection
 		if t.handleKey(k) {
 			t.print("\n")
 			m.connectTab(t)
@@ -542,6 +545,7 @@ func (m Model) editorDone(msg editorDoneMsg) Model {
 
 func (m *Model) switchTab(i int) {
 	m.active = i
+	m.sel = selection{}
 	m.focus = focusTerm
 	m.scrolling = false
 }
@@ -1136,6 +1140,7 @@ func (m Model) View() tea.View {
 		draw(lipgloss.NewStyle().Padding(1, 2).Render(m.form.view()), tr)
 	case t != nil:
 		m.drawTab(canvas, t, tr)
+		m.drawSelection(canvas, t, tr)
 		if m.focus == focusTerm && !m.scrolling && m.overlay == overlayNone && !m.settingsOpen && !t.emu.CursorHidden() {
 			p := t.emu.CursorPosition()
 			cursor = tea.NewCursor(tr.Min.X+p.X, tr.Min.Y+p.Y)

@@ -132,9 +132,9 @@ The top right corner shows `scroll N/M`. Full-screen programs (vim, htop) don't
 write to the history.
 
 **Copy and paste:**
-- select text with the mouse while holding **Shift** (Option in iTerm2) and
-  copy it with your terminal's tools, as usual; without Shift the mouse goes
-  to sshdeck, see [Mouse](#mouse). With `mouse: false`, no Shift is needed;
+- drag over text in the tab: it is copied to the clipboard when you let go;
+  middle click pastes it. See [selecting text](#selecting-text). With
+  `mouse: false`, select with your terminal as usual;
 - pasting from the clipboard is passed to the server; if the program on the
   server asked for bracketed paste, it gets it.
 
@@ -152,13 +152,30 @@ On by default; `mouse: false` in the [settings](settings.md) turns it off.
 | tree | click: select; double click: open the session / fold the folder; click on `▾` `▸`: fold at once; wheel: move |
 | `/ search` line | click: start a search |
 | sidebar edge `│` | drag: change the sidebar width; it is saved in `config.yaml` |
-| terminal | click: focus the terminal. Programs that use the mouse (vim with `set mouse=a`, htop, mc, tmux) get clicks, drags and the wheel |
-| terminal, other programs | wheel: scroll the history like `prefix [`; in full-screen programs without mouse support (less, man) the wheel sends `↑` / `↓` |
+| terminal | drag: select text, copied when you let go; double click: a word; triple click: a line; middle click: paste the copied text |
+| terminal, programs with mouse support | vim with `set mouse=a`, htop, mc, tmux get clicks, drags and the wheel; **Alt** + drag still selects text |
+| terminal, wheel | scrolls the history like `prefix [`; in full-screen programs without mouse support (less, man) it sends `↑` / `↓` |
 | help | wheel: scroll |
 
-**Selecting text:** while the mouse is on, the terminal hands it to sshdeck,
-so hold **Shift** to select (Option in iTerm2). This is how every terminal
-program with mouse support works (tmux, htop, mc).
+### Selecting text
+
+Drag with the left button inside a tab: the selection stays in the tab (the
+sidebar and the bars are not included) and works in the scrolled history too.
+When you let go, the text goes to the clipboard, and the status bar says
+`copied N characters`. Typing or switching tabs clears the highlight.
+
+The text is copied two ways at once:
+- through the terminal (OSC 52): works over SSH and inside tmux (it needs
+  `set -g set-clipboard on`); kitty, WezTerm, Alacritty, foot, iTerm2 and
+  Windows Terminal support it;
+- with `wl-copy`, `xclip` or `xsel` on Linux, `pbcopy` on macOS, if installed.
+  GNOME Terminal and Konsole need one of these: `sudo apt install wl-clipboard`
+  (Wayland) or `xclip` (X11).
+
+Paste with middle click, or as usual with `ctrl+shift+v`.
+
+**Shift + drag** is still the terminal's own selection, across the whole
+window.
 
 ## In-app help
 

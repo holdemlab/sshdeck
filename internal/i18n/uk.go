@@ -141,7 +141,9 @@ var uk = map[string]string{
 	// ---- mouse
 	"Mouse":                  "Миша",
 	"sidebar width %d saved": "ширину сайдбара %d збережено",
-	"clicks, wheel, sidebar drag; select text with Shift held": "кліки, колесо, перетягування сайдбара; текст виділяй із затиснутим Shift",
+	"clicks, wheel, sidebar drag; drag in a tab to copy text": "кліки, колесо, перетягування сайдбара; тягни у вкладці, щоб скопіювати текст",
+
+	"copied %d characters": "скопійовано символів: %d",
 
 	// ---- local shell
 	"Local shell":                     "Локальний shell",

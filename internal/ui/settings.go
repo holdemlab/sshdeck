@@ -108,7 +108,7 @@ func newSettingsForm(s config.Settings) settingsForm {
 		sKnownHosts: {label: "known_hosts", kind: fkText, input: text(s.KnownHosts, "~/.config/sshdeck/known_hosts"), help: "sshdeck's own host key file"},
 		sAgent:      {label: "ssh-agent", kind: fkBool, on: s.UseAgent, help: "use keys from $SSH_AUTH_SOCK"},
 		sIdentities: {label: "Keys", kind: fkList, input: text(strings.Join(s.Identities, ", "), "~/.ssh/id_ed25519, ~/.ssh/id_rsa"), help: "key files tried for every session, comma separated"},
-		sMouse:      {label: "Mouse", kind: fkBool, on: s.Mouse, help: "clicks, wheel, sidebar drag; select text with Shift held"},
+		sMouse:      {label: "Mouse", kind: fkBool, on: s.Mouse, help: "clicks, wheel, sidebar drag; drag in a tab to copy text"},
 		sLocal:      {label: "Local shell", kind: fkBool, on: s.LocalShell, help: "the \"local\" entry at the top of the tree (also prefix + l)"},
 		sLocalCmd:   {label: "Local cmd", kind: fkText, input: text(s.LocalCommand, "$SHELL"), help: "runs in local tabs instead of $SHELL, e.g. zsh -l (new tabs)"},
 		sRemember:   {label: "Remember pw", kind: fkBool, on: s.RememberPasswords, help: "keep accepted passwords / passphrases in memory until exit (never on disk)"},
