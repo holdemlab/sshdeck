@@ -61,7 +61,7 @@ type Settings struct {
 
 	// Mouse lets sshdeck use the mouse: clicks on tabs and the tree, the
 	// wheel, dragging the sidebar edge, and mouse input for programs in the
-	// tabs. Text is then selected with Shift held.
+	// tabs. Dragging in a tab selects text and copies it.
 	Mouse bool `yaml:"mouse"`
 
 	// LocalShell shows the built-in "local" entry at the top of the tree: a
@@ -166,8 +166,8 @@ remember_passwords: %t
 confirm_close: %t         # ask before closing a tab with a live connection
 
 # Mouse: click tabs and the tree, scroll with the wheel, drag the sidebar
-# edge; programs in the tabs (vim, htop, mc) get the mouse too. While it is
-# on, select text with Shift held (Option in iTerm2).
+# edge; programs in the tabs (vim, htop, mc) get the mouse too. Drag in a tab
+# to select and copy text; Shift + drag is the terminal's own selection.
 mouse: %t
 
 # The "local" entry at the top of the tree opens a shell on this computer
@@ -216,8 +216,8 @@ remember_passwords: %t
 confirm_close: %t         # питати перед закриттям вкладки з живим з'єднанням
 
 # Миша: клік по вкладках і дереву, прокрутка колесом, перетягування межі
-# сайдбара; програми у вкладках (vim, htop, mc) теж отримують мишу. Поки вона
-# увімкнена, текст виділяють із затиснутим Shift (Option в iTerm2).
+# сайдбара; програми у вкладках (vim, htop, mc) теж отримують мишу. Тягни у
+# вкладці, щоб виділити й скопіювати текст; Shift + тягнути — виділення термінала.
 mouse: %t
 
 # Пункт «local» угорі дерева відкриває shell на цьому комп'ютері (також

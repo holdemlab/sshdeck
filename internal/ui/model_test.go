@@ -1647,3 +1647,59 @@ func TestMouseInTerminal(t *testing.T) {
 	}
 	waitScreen(t, tab, "[<64;6;3M")
 }
+
+// Dragging in a tab selects text in the tab only and copies it.
+func TestSelectionInTab(t *testing.T) {
+	m, _ := setup(t, treeYAML)
+	m = localTabs(t, m, 1, `printf 'alpha beta\ngamma delta\nready\n'; cat`)
+	defer closeAll(t, m)
+	tab := m.activeTab()
+	waitScreen(t, tab, "ready")
+	tr := m.termRect()
+	at := func(x, y int) (int, int) { return tr.Min.X + x, tr.Min.Y + y }
+
+	// from "beta" on line 0 to "gamma" on line 1
+	x0, y0 := at(6, 0)
+	x1, y1 := at(4, 1)
+	m = send(m, tea.MouseClickMsg{X: x0, Y: y0, Button: tea.MouseLeft},
+		tea.MouseMotionMsg{X: x1, Y: y1, Button: tea.MouseLeft},
+		tea.MouseReleaseMsg{X: x1, Y: y1, Button: tea.MouseLeft})
+	if m.lastCopy != "beta\ngamma" {
+		t.Fatalf("copied %q", m.lastCopy)
+	}
+	if !m.statusOK || !strings.Contains(m.status, "copied 10") {
+		t.Errorf("status %q", m.status)
+	}
+	// highlighted in the tab, nothing in the sidebar
+	c := lipgloss.NewCanvas(m.width, m.height)
+	uv.NewStyledString(m.View().Content).Draw(c, c.Bounds())
+	if c.CellAt(x0, y0).Style.Attrs&uv.AttrReverse == 0 {
+		t.Error("selection not highlighted")
+	}
+
+	// double click: the word
+	xw, yw := at(1, 1)
+	m = send(m, click(xw, yw), click(xw, yw))
+	if m.lastCopy != "gamma" {
+		t.Errorf("double click copied %q", m.lastCopy)
+	}
+	// triple click: the line
+	m = send(m, click(xw, yw))
+	if m.lastCopy != "gamma delta" {
+		t.Errorf("triple click copied %q", m.lastCopy)
+	}
+	// middle click pastes it into the tab
+	m = send(m, tea.MouseClickMsg{X: xw, Y: yw, Button: tea.MouseMiddle})
+	m = sendRun(t, m, key("enter"))
+	deadline := time.Now().Add(5 * time.Second) // printed, echoed, and cat's copy
+	for strings.Count(tab.screenText(), "gamma delta") < 3 && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if n := strings.Count(tab.screenText(), "gamma delta"); n < 3 {
+		t.Errorf("middle click did not paste (%d copies):\n%s", n, tab.screenText())
+	}
+	// typing clears the selection
+	if m.sel.tab != 0 {
+		t.Error("selection kept after typing")
+	}
+}

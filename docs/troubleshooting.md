@@ -38,7 +38,8 @@ stays open, and `r` reconnects.
 | `Connection to … closed.` | the shell on the server ended (`exit`) |
 | `remote exited with status N` | the command or shell ended with code N |
 | `connection lost` | the connection dropped or the server stopped answering keepalives |
-| text cannot be selected with the mouse | the mouse goes to sshdeck: hold **Shift** while selecting (Option in iTerm2), or set `mouse: false` |
+| the selection is not in the clipboard | the terminal ignores OSC 52 (GNOME Terminal, Konsole): install `wl-clipboard` or `xclip`; inside tmux set `set -g set-clipboard on` |
+| dragging in vim / mc does not select | the program takes the mouse: drag with **Alt** held, or use the terminal's selection with **Shift** |
 
 ## Configs
 

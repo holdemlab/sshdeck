@@ -138,7 +138,7 @@ Same format as in ssh:
 | `⇄2` | 2 tunnels running |
 
 Scroll history: `ctrl+a [`, then `↑↓` `pgup pgdn` `g G`, exit with `esc`.
-Select text with Shift held and copy it with your terminal's own tools.
+Drag over text in a tab to copy it (double click: a word); middle click pastes.
 
 ## Language
 
@@ -162,8 +162,8 @@ you choose and also colors the programs in the tabs.
 
 Click a tab to switch, middle click to close; click and double click in the
 tree; the wheel scrolls the tree, the history and this help; drag the sidebar
-edge to resize. vim, htop, mc get the mouse too. **Select text with Shift
-held.** Turn it off with `mouse: false`.
+edge to resize. vim, htop, mc get the mouse too. **Drag in a tab to select
+and copy text** (Alt + drag inside vim / mc). Turn it off with `mouse: false`.
 
 ## Version
 
