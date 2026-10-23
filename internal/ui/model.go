@@ -48,6 +48,7 @@ const (
 	overlayInstallKey
 	overlayColors
 	overlayMenu
+	overlayDest
 )
 
 // Options configure the UI.
@@ -93,6 +94,7 @@ type Model struct {
 
 	colors colorDialog // C in the tree (overlayColors)
 	menu   contextMenu // right click / m in the tree (overlayMenu)
+	dest   destPicker  // Copy to… / Move to… (overlayDest)
 	// install-key dialog (overlayInstallKey)
 	key keyDialog
 
@@ -316,6 +318,8 @@ func (m Model) handleKey(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.colorKey(k)
 	case overlayMenu:
 		return m.menuKey(k)
+	case overlayDest:
+		return m.destKey(k)
 	case overlayConfirmDelete:
 		m.overlay = overlayNone
 		if k.String() == "y" {
@@ -755,6 +759,10 @@ func (m Model) updateSidebar(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.startRename()
 	case "x":
 		m.cut()
+	case "X":
+		m.openDestPicker(false)
+	case "Y":
+		m.openDestPicker(true)
 	case "p":
 		m.paste(false)
 	case "P":
@@ -1173,6 +1181,8 @@ func (m Model) View() tea.View {
 		m.drawCentered(canvas, overlayStyle.Render(m.renderColorDialog()))
 	case overlayMenu:
 		m.drawMenu(canvas)
+	case overlayDest:
+		m.drawCentered(canvas, overlayStyle.Render(m.renderDestPicker()))
 	case overlayTunnels:
 		if t != nil {
 			m.drawCentered(canvas, overlayStyle.Render(m.renderTunnels(t)))

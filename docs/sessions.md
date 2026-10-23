@@ -218,6 +218,32 @@ All actions work in the sidebar. If the focus is in the terminal, press
 You can't put a folder inside itself. A moved folder keeps its settings.
 The old folder stays, even if empty, and you can delete it with `d`.
 
+### Copy to… and Move to…
+
+`Y` (Copy to…) and `X` (Move to…), also in the [context menu](keys.md#context-menu),
+open a list of destinations: the top level and every folder, starting at the
+item's current folder.
+
+```
+Copy prod/web/web-01 to…
+type to filter
+
+  top level
+  ▸ infra
+  ▸ prod
+    ▸ web
+  ▸ staging
+```
+
+- `↑↓` choose, `enter` copies or moves there, `esc` cancels.
+- Typing filters the folders by name (`backspace` deletes, `esc` clears the
+  filter).
+- With the mouse: click a folder; the wheel scrolls.
+- When moving a folder, the folder itself and its subfolders are not offered.
+
+This is the quickest way for one copy. `y` / `x` with `p` (below and above)
+are handy for several copies in different places.
+
 ### Copying
 
 You can copy both sessions and folders with all their contents.

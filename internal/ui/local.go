@@ -89,7 +89,7 @@ func (m Model) localKey(k tea.KeyPressMsg) (Model, tea.Cmd, bool) {
 		m.setStatus(true, "the local shell is set up in the settings")
 	case "C":
 		m.openColorDialog()
-	case "R", "f2", "x", "y", "c", "d", "delete":
+	case "R", "f2", "x", "y", "X", "Y", "c", "d", "delete":
 		m.setStatus(false, "the local shell is built in; hide it in the settings (local_shell)")
 	default:
 		return m, nil, false

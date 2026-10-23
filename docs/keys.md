@@ -61,6 +61,7 @@ status line is highlighted and shows the available commands.
 | `y`, then `p` / `P` | copy into the selected folder / to the top level (`p` again makes one more copy, `esc` finishes) |
 | `d` or `delete` | delete the session or folder (asks first) |
 | `x`, then `p` / `P` | move into the selected folder / to the top level |
+| `Y` / `X` | copy to… / move to…: pick the folder from a list ([details](sessions.md#copy-to-and-move-to)) |
 | `E` | open `sessions.yaml` in the editor |
 | `r` | reload `sessions.yaml` |
 | `,` | settings |
@@ -151,8 +152,8 @@ sheet.
 
 | Entry | Items |
 |---|---|
-| session | Open, Open tunnels only, Edit…, Colors…, Rename, Duplicate, Copy, Cut, Paste here (after Copy / Cut), Delete… |
-| folder | Collapse / Expand, New session here, New folder here, Edit…, Colors…, Rename, Duplicate, Copy, Cut, Paste here, Delete… |
+| session | Open, Open tunnels only, Edit…, Colors…, Rename, Duplicate here, Copy to…, Move to…, Paste here (after `y` / `x`), Delete |
+| folder | Collapse / Expand, New session here, New folder here, Edit…, Colors…, Rename, Duplicate here, Copy to…, Move to…, Paste here, Delete |
 | `local` | Open, Colors…, Settings… |
 | empty space below the tree | New session, New folder, Paste at the top level (all at the top level) |
 
